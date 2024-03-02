@@ -8,5 +8,5 @@ function u = jointPD(qDes, q, dqDes, dq)
     kp = 10;
     kd = 1;
 
-    u = kp * (qDes - q) + kd * (dqDes - dq); 
+    u = kp .* (qDes - q) + kd .* (dqDes - dq); 
 end
