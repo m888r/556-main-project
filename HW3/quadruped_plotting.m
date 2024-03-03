@@ -1,28 +1,29 @@
 clc;
-clear;
+%clear;
 close all;
+% FL (Hip, Thigh, Calf)
+% FR (...)
+% RL (...)
+% RR (...)
+leg = ["FL", "FR", "RL", "RR"];
 
-figure("Name", "Leg Plots");
+% Joint Torque Plots
+figure("Name", "Leg Joint Torque Plots");
+us = squeeze(out.u.Data);
+for n = 1:4
+    subplot(2, 2, n);
+    % Hip
+    plot(out.u.Time, us(3*n - 2, :));
+    hold on;
+    % Thigh
+    plot(out.u.Time, us(3*n - 1, :));
+    % Calf
+    plot(out.u.Time, us(3*n, :));
+    xlabel('t [s]'); ylabel('\tau [Nm]'); legend('Hip', 'Thigh', 'Calf');
+    title(leg(n));
+end
+
+% Joint Angle Plots
 
 
-% FL
-subplot(2, 2, 1);
-title("FL");
-plot(out.u.Time, out.u.Data(1, 1, :));
-hold on;
-plot(out.u.Time, out.u.Data(2, 1, :));
-plot(out.u.Time, out.u.Data(3, 1, :));
-
-% plot(out.)
-
-% FR
-subplot(2, 2, 2);
-title("FR");
-
-% RL
-subplot(2, 2, 3);
-title("RL");
-
-% RR
-subplot(2, 2, 4);
-title("RR");
+% Joint Velocity Plots
