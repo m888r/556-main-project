@@ -9,3 +9,4 @@ function [pf, dpf] = swing_trajectory(curr_t, pf_start, pf_des)
     % implement a linearly interpolated trajectory from pf_start to pf_des
     
 end
+
