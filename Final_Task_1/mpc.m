@@ -6,14 +6,6 @@
     %}
 
 function grf_forces = mpc(X, pf, Xd, gait) 
-    N = 3;
-    dt = [];
-    Q = [];
-    R = [];
-    F_max = [];
-    F_min = [];
-    I_b = [];
-
     P = X(1:3);
     ypr = X(4:6);
     X_bard = [Xd; 9.81];
@@ -21,7 +13,42 @@ function grf_forces = mpc(X, pf, Xd, gait)
     forces = 4;
     bar_states = 13;
     Xmpc_elem = bar_states*N + forces*3*N;
+
+    N = 10;
+    dt = 0.03;
+    % Q, R values from HW4 #2(b)
+    Q = diag([40, 50, 60, 10, 10, 10, 4, 4, 4, 1, 1, 1, 0]);
+    R = 0.00001*eye(forces*3);
+    m = 12;
+    F_max = 500;
+    F_min = 10;
+    mu = 0.5;
+    I_b = diag([0.0168, 0.0565, 0.064]);
         
+    % Foot Contact
+    % Would need to update for swing trajectory
+%{
+ftcontact_prev = params.ftcontact_prev;
+    ftcontact_next = gait(1:forces);
+    hip_vec = [params.vk, params.vg, params.vi, params.ve];
+    for ind = 1:forces
+        if ftcontact_prev(ind) == 0 && ftcontact_next(ind) == 1
+            r_temp = R*hip_vec(:, ind) + P;
+            switch ind
+                case 1
+                    params.p_f1 = [r_temp(1:2); 0];
+                case 2
+                    params.p_f2 = [r_temp(1:2); 0];
+                case 3
+                    params.p_f3 = [r_temp(1:2); 0];
+                case 4
+                    params.p_f4 = [r_temp(1:2); 0];
+            end
+        end
+    end
+%}
+
+
     % Cost function parameters
     temp_fQs = [];
     for ind = 1:N
@@ -51,7 +78,7 @@ function grf_forces = mpc(X, pf, Xd, gait)
     phi  = ypr(3);
 
     Rz_T = [cos(psi), sin(psi), 0; -sin(psi), cos(psi), 0; 0, 0, 1];
-    I_w = Rz_T'*params.I_b*Rz_T;
+    I_w = Rz_T'*I_b*Rz_T;
 
     A_bar = zeros(states);
     A_bar(1:3, 3*2+1:3*3) = eye(3);
