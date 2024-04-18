@@ -8,7 +8,7 @@ function grf_forces = mpc_simulink(X, pf)
     bar_states = 13;
     N = 10;
     dt = 0.03;
-    Xmpc_elem = bar_states*N + forces*3*N;
+    Xmpc_elem = bar_states*N + forces*3*N
 
 
     % Q, R values from HW4 #2(b)
@@ -59,6 +59,7 @@ ftcontact_prev = params.ftcontact_prev;
     % Inequality constraints A_iq
     Fiq_mat = [-1, 0, -mu; 1, 0, -mu; 0, -1, -mu; 0, 1, -mu; 0, 0, 1; 0, 0, -1];
     A_iq = [zeros(6*forces*N, bar_states*N), kron(eye(forces*N),Fiq_mat)];
+    size(A_iq)
 
 
     % Inequality constraints b_iq
