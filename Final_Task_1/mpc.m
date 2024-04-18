@@ -1,7 +1,7 @@
     %{
-        X : states [P; yaw; pitch; roll; dP; dw]
+        X : bar_states [P; yaw; pitch; roll; dP; dw]
         pf : foot positions [pf1; pf2; pf3; pf4]
-        Xd : desired states [Pd; yawd; pitchd; rolld; dPd; dwd]
+        Xd : desired bar_states [Pd; yawd; pitchd; rolld; dPd; dwd]
         gait : contact vector 0/1
     %}
 
@@ -80,10 +80,10 @@ ftcontact_prev = params.ftcontact_prev;
     Rz_T = [cos(psi), sin(psi), 0; -sin(psi), cos(psi), 0; 0, 0, 1];
     I_w = Rz_T'*I_b*Rz_T;
 
-    A_bar = zeros(states);
+    A_bar = zeros(bar_states);
     A_bar(1:3, 3*2+1:3*3) = eye(3);
     A_bar(3+1:3*2, 3*3+1:3*4) = Rz_T;
-    A_bar(3*3, states) = -1;
+    A_bar(3*3, bar_states) = -1;
 
     % Position of feet in world frame
     r_f1 = pf(1:3) - P;
@@ -101,30 +101,30 @@ ftcontact_prev = params.ftcontact_prev;
     B_bar = [zeros(3*2, 3*forces); [eye(3)/m, eye(3)/m, eye(3)/m, eye(3)/m]; temp_mat; zeros(1, 3*forces)];
 
     % Discretization
-    A_k = A_bar*dt + eye(states);
+    A_k = A_bar*dt + eye(bar_states);
     B_k = B_bar*dt;
 
     % MPC Dynamic Constraints
-    A_eq = zeros(states, Xmpc_elem - 3*forces*N);
-    A_eq(1:states, 1:states) = eye(states);
-    A_Xrot = [-A_k, eye(states)];
-    A_Xrot = [A_Xrot, zeros(states, states*(N-2))];
+    A_eq = zeros(bar_states, Xmpc_elem - 3*forces*N);
+    A_eq(1:bar_states, 1:bar_states) = eye(bar_states);
+    A_Xrot = [-A_k, eye(bar_states)];
+    A_Xrot = [A_Xrot, zeros(bar_states, bar_states*(N-2))];
     % Shift for each 
     for ind = 1:N-1
         A_eq = [A_eq; A_Xrot];
-        A_Xrot = circshift(A_Xrot,states, 2);
+        A_Xrot = circshift(A_Xrot,bar_states, 2);
     end
     for ind = 1:N
         temp_vec = zeros(Xmpc_elem - 3*forces*N, 1);
-        start = 1 + states*(ind - 1);
-        temp_vec(start:start+states-1, 1:3*forces) = -B_k; 
+        start = 1 + bar_states*(ind - 1);
+        temp_vec(start:start+bar_states-1, 1:3*forces) = -B_k; 
         A_eq = [A_eq, temp_vec];
     end
 
     b_eq = zeros(Xmpc_elem - 3*forces*N, 1);
-    b_eq(1:states) = A_k*X_bar;
+    b_eq(1:bar_states) = A_k*X_bar;
 
 
     X_mpc = quadprog(H, f, A_iq, b_iq, A_eq, b_eq);
-    grf_forces = X_mpc(N*states + 1:N*states + 3*forces, 1);
+    grf_forces = X_mpc(N*bar_states + 1:N*bar_states + 3*forces, 1);
 end
