@@ -115,7 +115,7 @@ ftcontact_prev = params.ftcontact_prev;
     end
     A_eq2 = zeros(bar_states*N, 3*forces*N);
     for ind = 1:N
-        temp_vec = zeros(Xmpc_elem - 3*forces*N, 1);
+        temp_vec = zeros(Xmpc_elem - 3*forces*N, 3*forces);
         start = 1 + bar_states*(ind - 1);
         temp_vec(start:start+bar_states-1, 1:3*forces) = -B_k; 
         A_eq2(:, ind*3*forces - 3*forces + 1: ind*3*forces) = temp_vec;
