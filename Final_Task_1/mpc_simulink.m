@@ -8,7 +8,7 @@ function grf_forces = mpc_simulink(X, pf)
     bar_states = 13;
     N = 10;
     dt = 0.03;
-    Xmpc_elem = bar_states*N + forces*3*N
+    Xmpc_elem = bar_states*N + forces*3*N;
 
 
     % Q, R values from HW4 #2(b)
@@ -45,21 +45,19 @@ ftcontact_prev = params.ftcontact_prev;
 
 
     % Cost function parameters
-    temp_fQs = [];
-    temp_Qs = [];
-    temp_Rs = [];
-    for ind = 1:N
-        temp_Qs = [temp_Qs; diag(Q)];
-        temp_Rs = [temp_Rs; diag(R)];
-        temp_fQs = [temp_fQs; -Q'*X_bard];
-    end
-    H = diag([temp_Qs; temp_Rs]);
-    f = [temp_fQs; zeros(3*forces*N, 1)];
+    vec_Q = diag(Q);
+    temp_Qs = vec_Q(:, ones(N, 1));
+    vec_R = diag(R);
+    temp_Rs = vec_R(:, ones(N, 1));
+    temp_fQ = -Q'*X_bard;
+    temp_fQs = temp_fQ(:, ones(N, 1));
+
+    H = diag([temp_Qs(:); temp_Rs(:)]);
+    f = [temp_fQs(:); zeros(3*forces*N, 1)];
 
     % Inequality constraints A_iq
     Fiq_mat = [-1, 0, -mu; 1, 0, -mu; 0, -1, -mu; 0, 1, -mu; 0, 0, 1; 0, 0, -1];
     A_iq = [zeros(6*forces*N, bar_states*N), kron(eye(forces*N),Fiq_mat)];
-    size(A_iq)
 
 
     % Inequality constraints b_iq
@@ -92,12 +90,13 @@ ftcontact_prev = params.ftcontact_prev;
     r_f3 = pf(7:9) - P;
     r_f4 = pf(10:12) - P;
     r_fs = [r_f1, r_f2, r_f3, r_f4];
-    temp_mat = [];
+
+    temp_mat = zeros(3, 3*forces);
     for ind = 1:forces
         temp_r = r_fs(:, ind);
         temp = [0, -temp_r(3), temp_r(2); temp_r(3), 0, -temp_r(1); -temp_r(2), temp_r(1), 0];
         temp_term = inv(I_w)*temp;
-        temp_mat = [temp_mat, temp_term];
+        temp_mat(:, 3*ind - 2:3*ind) = temp_term;
     end
     B_bar = [zeros(3*2, 3*forces); [eye(3)/m, eye(3)/m, eye(3)/m, eye(3)/m]; temp_mat; zeros(1, 3*forces)];
 
@@ -106,24 +105,22 @@ ftcontact_prev = params.ftcontact_prev;
     B_k = B_bar*dt;
 
     % MPC Dynamic Constraints
-    A_eq1 = zeros(bar_states, Xmpc_elem - 3*forces*N);
+    A_eq1 = zeros(bar_states*N, bar_states*N);
     A_eq1(1:bar_states, 1:bar_states) = eye(bar_states);
-    A_Xrot = [-A_k, eye(bar_states)];
-    A_Xrot = [A_Xrot, zeros(bar_states, bar_states*(N-2))];
+    A_Xrot = [-A_k, eye(bar_states), zeros(bar_states, bar_states*(N-2))];
     % Shift for each 
     for ind = 1:N-1
-        A_eq1 = [A_eq1; A_Xrot];
+        A_eq1(ind*bar_states + 1:ind*bar_states + bar_states, 1:bar_states*N) = A_Xrot;
         A_Xrot = circshift(A_Xrot,bar_states, 2);
     end
-    A_eq2 = [];
+    A_eq2 = zeros(bar_states*N, 3*forces*N);
     for ind = 1:N
         temp_vec = zeros(Xmpc_elem - 3*forces*N, 1);
         start = 1 + bar_states*(ind - 1);
         temp_vec(start:start+bar_states-1, 1:3*forces) = -B_k; 
-        A_eq2 = [A_eq2, temp_vec];
+        A_eq2(:, ind*3*forces - 3*forces + 1: ind*3*forces) = temp_vec;
     end
     A_eq = [A_eq1, A_eq2];
-
     b_eq = zeros(Xmpc_elem - 3*forces*N, 1);
     b_eq(1:bar_states) = A_k*X_bar;
 
