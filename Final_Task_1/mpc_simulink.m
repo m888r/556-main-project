@@ -63,11 +63,13 @@ ftcontact_prev = params.ftcontact_prev;
 
 
     % Inequality constraints b_iq
-    b_iq = [];
-    for ind = 1:forces*N
+    % b_iq = [];
+    b_iq = zeros(6*N*forces, 1);
+    for ind = 1:6:6*N*forces
         % alpha = gait(ind);
         alpha = 1;
-        b_iq = [b_iq; 0; 0; 0; 0; alpha*F_max; -alpha*F_min];
+        %b_iq = [b_iq; 0; 0; 0; 0; alpha*F_max; -alpha*F_min];
+        b_iq(ind:ind + 5, 1) = [0; 0; 0; 0; alpha*F_max; -alpha*F_min];
     end
 
     % Linearization
