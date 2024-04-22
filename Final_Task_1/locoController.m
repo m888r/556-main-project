@@ -24,7 +24,7 @@ else
     ftcontact_next = ftcontacts(1:legs);
     for ind = 1:legs
         if currcontact(ind) == 1 && ftcontact_next(ind) == 0
-            %rrf(ind*3 - 2: ind*3) = SWING CONTROL for the specific leg
+            %rrf_swing(ind*3 - 2: ind*3) = SWING CONTROL for the specific leg
         end
     end
 
