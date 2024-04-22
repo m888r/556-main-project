@@ -15,5 +15,6 @@ function [pf, dpf] = swing_trajectory(curr_t, T_stance, pf_start, pf_des)
     
     % 2nd order bezier: (1-t)^2 * P0 * 2 + 2*(1-t)*t*P1 + t^2*P2
     pf = P0.*(1-t)^2 + 2.*t.*P1.*(1-t) + P2.*(t^2);
+    dpf = [0; 0; 0];
 end
 

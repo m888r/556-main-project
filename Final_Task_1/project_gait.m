@@ -10,26 +10,26 @@ end
 gait_states = length(gait_ref)/4;
 
 % Default contact on all feet if t = 0
-if t == 0
-    currcontact = [1; 1; 1; 1];
-else
-    % Current gait state based on current time
-    curr_state = floor(t/gaitperiod) + 1;
-    % If at the gait switch time, current state defaults to state before
-    % switching
-    if mod(t, gaitperiod) == 0
-        curr_state = curr_state - 1;
-    end
-
-    % Current gait state starting index in gait_ref
-    curr_startind = (curr_state - 1)*4 + 1;
-    % If current start index is greater than the gait_ref given, loop around
-    % and update gait_ref
-    if curr_startind > gait_states*4
-        curr_startind = mod(curr_startind, gait_states*4);
-    end
-    currcontact = gait_ref(curr_startind:curr_startind+3);
+% if t <= 0.3
+    % currcontact = [1; 1; 1; 1];
+% else
+% Current gait state based on current time
+curr_state = floor(t/gaitperiod) + 1;
+% If at the gait switch time, current state defaults to state before
+% switching
+if mod(t, gaitperiod) == 0
+    curr_state = curr_state - 1;
 end
+
+% Current gait state starting index in gait_ref
+curr_startind = (curr_state - 1)*4 + 1;
+% If current start index is greater than the gait_ref given, loop around
+% and update gait_ref
+if curr_startind > gait_states*4
+    curr_startind = mod(curr_startind, gait_states*4);
+end
+currcontact = gait_ref(curr_startind:curr_startind+3);
+% end
 
 % Repeat above process for N times to get future foot contacts
 ftcontacts = zeros(4*N,1);
