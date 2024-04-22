@@ -95,7 +95,7 @@ ftcontact_prev = params.ftcontact_prev;
     for ind = 1:forces
         temp_r = r_fs(:, ind);
         temp = [0, -temp_r(3), temp_r(2); temp_r(3), 0, -temp_r(1); -temp_r(2), temp_r(1), 0];
-        temp_term = inv(I_w)*temp;
+        temp_term = I_w\temp;
         temp_mat(:, 3*ind - 2:3*ind) = temp_term;
     end
     B_bar = [zeros(3*2, 3*forces); [eye(3)/m, eye(3)/m, eye(3)/m, eye(3)/m]; temp_mat; zeros(1, 3*forces)];
