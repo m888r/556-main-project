@@ -1,6 +1,5 @@
-function rrf_forces = mpc_simulink(X, pf, t)
+function rrf_forces = mpc_simulink(X, pf, t, N, dt)
 coder.extrinsic('quadprog');
-if t > 0.3
    Xd = [0; 0; 0.2; zeros(3,1); zeros(3,1); zeros(3,1)];
    P = X(1:3);
    ypr = X(4:6);
@@ -8,8 +7,8 @@ if t > 0.3
    X_bar = [X; 9.81];
    forces = 4;
    bar_states = 13;
-   N = 10;
-   dt = 0.03;
+   % N = 10;
+   % dt = 0.03;
    Xmpc_elem = bar_states*N + forces*3*N;
    % Q, R values from HW4 #2(b)
    Q = diag([40, 50, 60, 10, 10, 10, 4, 4, 4, 1, 1, 1, 0]);
@@ -132,9 +131,5 @@ ftcontact_prev = params.ftcontact_prev;
    grf_forces = X_mpc(N*bar_states + 1:N*bar_states + 3*forces, 1);
    rrf_forces = zeros(3*forces, 1);
    rrf_forces = -1 * grf_forces;
-else
-    rrf_forces = zeros(12, 1);
-end
-
 end
 

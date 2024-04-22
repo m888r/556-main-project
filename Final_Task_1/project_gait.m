@@ -1,4 +1,9 @@
 function [currcontact, ftcontacts] = project_gait(t,N,dt, gaitperiod, gaitname)
+persistent currgait
+if isempty(currgait)
+    currgait = "standing";
+end
+
 gait_ref = [0;0;0;0];
 if isequal(gaitname, "standing")
     gait_ref = [1; 1; 1; 1];
@@ -9,10 +14,11 @@ elseif isequal(gaitname, "bounding")
 end
 gait_states = length(gait_ref)/4;
 
-% Default contact on all feet if t = 0
-% if t <= 0.3
-    % currcontact = [1; 1; 1; 1];
-% else
+% Default contact on all feet if last known state was standing
+if isequal(currgait, "standing")
+    currcontact = [1; 1; 1; 1];
+else
+
 % Current gait state based on current time
 curr_state = floor(t/gaitperiod) + 1;
 % If at the gait switch time, current state defaults to state before
@@ -29,7 +35,8 @@ if curr_startind > gait_states*4
     curr_startind = mod(curr_startind, gait_states*4);
 end
 currcontact = gait_ref(curr_startind:curr_startind+3);
-% end
+
+end
 
 % Repeat above process for N times to get future foot contacts
 ftcontacts = zeros(4*N,1);
@@ -46,4 +53,6 @@ for ind = 1:N
     end
     ftcontacts((ind-1)*4+1:(ind-1)*4 + 4) = gait_ref(temp_startind:temp_startind+3);
 end
+
+currgait = gaitname;
 end

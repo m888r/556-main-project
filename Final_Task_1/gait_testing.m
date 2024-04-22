@@ -1,13 +1,15 @@
-clc;
+clc; clear;
 
-t = 0;
 N = 4;
 dt = 0.01;
 gaitperiod = 0.02;
 gaitname = 'trotting';
 
+t = 0;
 %mpcTable = mohsen_gait(t,N,dt, gaitname)
-[currcontact, ftcontacts] = project_gait(t,N,dt, gaitperiod, gaitname);
+[currcontact, ftcontacts] = project_gait(t,N,dt, gaitperiod, gaitname)
+t = 0.03;
+[currcontact, ftcontacts] = project_gait(t,N,dt, gaitperiod, gaitname)
 
 % function [currcontact, ftcontacts] = project_gait(t,N,dt, gaitperiod, gaitname)
 % if isequal(gaitname, 'standing')
