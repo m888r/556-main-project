@@ -1,18 +1,18 @@
-function rrf_forces = mpc_simulink(X, pf, t, N, dt)
+function rrf_legs = mpc_simulink(X, pf, t, N, dt, ftcontacts)
 coder.extrinsic('quadprog');
    Xd = [0; 0; 0.2; zeros(3,1); zeros(3,1); zeros(3,1)];
    P = X(1:3);
    ypr = X(4:6);
    X_bard = [Xd; 9.81];
    X_bar = [X; 9.81];
-   forces = 4;
+   legs = 4;
    bar_states = 13;
    % N = 10;
    % dt = 0.03;
-   Xmpc_elem = bar_states*N + forces*3*N;
+   Xmpc_elem = bar_states*N + legs*3*N;
    % Q, R values from HW4 #2(b)
    Q = diag([40, 50, 60, 10, 10, 10, 4, 4, 4, 1, 1, 1, 0]);
-   R = 0.00001*eye(forces*3);
+   R = 0.00001*eye(legs*3);
    m = 12;
    F_max = 500;
    F_min = 10;
@@ -23,9 +23,9 @@ coder.extrinsic('quadprog');
    % Would need to update for swing trajectory
 %{
 ftcontact_prev = params.ftcontact_prev;
-   ftcontact_next = gait(1:forces);
+   ftcontact_next = gait(1:legs);
    hip_vec = [params.vk, params.vg, params.vi, params.ve];
-   for ind = 1:forces
+   for ind = 1:legs
        if ftcontact_prev(ind) == 0 && ftcontact_next(ind) == 1
            r_temp = R*hip_vec(:, ind) + P;
            switch ind
@@ -50,18 +50,15 @@ ftcontact_prev = params.ftcontact_prev;
     temp_fQs = temp_fQ(:, ones(N, 1));
 
     H = diag([temp_Qs(:); temp_Rs(:)]);
-    f = [temp_fQs(:); zeros(3*forces*N, 1)];
+    f = [temp_fQs(:); zeros(3*legs*N, 1)];
 
    % Inequality constraints A_iq
    Fiq_mat = [-1, 0, -mu; 1, 0, -mu; 0, -1, -mu; 0, 1, -mu; 0, 0, 1; 0, 0, -1];
-   A_iq = [zeros(6*forces*N, bar_states*N), kron(eye(forces*N),Fiq_mat)];
+   A_iq = [zeros(6*legs*N, bar_states*N), kron(eye(legs*N),Fiq_mat)];
    % Inequality constraints b_iq
-   % b_iq = [];
-   b_iq = zeros(6*N*forces, 1);
-   for ind = 1:6:6*N*forces
-       % alpha = gait(ind);
-       alpha = 1;
-       %b_iq = [b_iq; 0; 0; 0; 0; alpha*F_max; -alpha*F_min];
+   b_iq = zeros(6*N*legs, 1);
+   for ind = 1:6:6*N*legs
+       alpha = ftcontacts(ind);
        b_iq(ind:ind + 5, 1) = [0; 0; 0; 0; alpha*F_max; -alpha*F_min];
    end
 
@@ -83,14 +80,14 @@ ftcontact_prev = params.ftcontact_prev;
    r_f4 = pf(10:12) - P;
    r_fs = [r_f1, r_f2, r_f3, r_f4];
 
-   temp_mat = zeros(3, 3*forces);
-   for ind = 1:forces
+   temp_mat = zeros(3, 3*legs);
+   for ind = 1:legs
         temp_r = r_fs(:, ind);
         temp = [0, -temp_r(3), temp_r(2); temp_r(3), 0, -temp_r(1); -temp_r(2), temp_r(1), 0];
         temp_term = I_w\temp;
         temp_mat(:, 3*ind - 2:3*ind) = temp_term;
     end
-    B_bar = [zeros(3*2, 3*forces); [eye(3)/m, eye(3)/m, eye(3)/m, eye(3)/m]; temp_mat; zeros(1, 3*forces)];
+    B_bar = [zeros(3*2, 3*legs); [eye(3)/m, eye(3)/m, eye(3)/m, eye(3)/m]; temp_mat; zeros(1, 3*legs)];
 
    % Discretization
    A_k = A_bar*dt + eye(bar_states);
@@ -105,15 +102,15 @@ ftcontact_prev = params.ftcontact_prev;
         A_eq1(ind*bar_states + 1:ind*bar_states + bar_states, 1:bar_states*N) = A_Xrot;
         A_Xrot = circshift(A_Xrot,bar_states, 2);
     end
-    A_eq2 = zeros(bar_states*N, 3*forces*N);
+    A_eq2 = zeros(bar_states*N, 3*legs*N);
     for ind = 1:N
-        temp_vec = zeros(Xmpc_elem - 3*forces*N, 3*forces);
+        temp_vec = zeros(Xmpc_elem - 3*legs*N, 3*legs);
         start = 1 + bar_states*(ind - 1);
         temp_vec(start:start+bar_states-1, :) = -B_k; 
-        A_eq2(:, ind*3*forces - 3*forces + 1: ind*3*forces) = temp_vec;
+        A_eq2(:, ind*3*legs - 3*legs + 1: ind*3*legs) = temp_vec;
     end
     A_eq = [A_eq1, A_eq2];
-    b_eq = zeros(Xmpc_elem - 3*forces*N, 1);
+    b_eq = zeros(Xmpc_elem - 3*legs*N, 1);
     b_eq(1:bar_states) = A_k*X_bar;
 
    %options = optimoptions('quadprog', 'Algorithm', 'active-set');
@@ -128,8 +125,8 @@ ftcontact_prev = params.ftcontact_prev;
    %X_mpc = quadprog(H, f, A_iq, b_iq, A_eq, b_eq,lb,ub, x0,options);
    X_mpc = quadprog(H, f, A_iq, b_iq, A_eq, b_eq);
    % X_mpc = quadprog(H, f, [], [], A_eq, b_eq);
-   grf_forces = X_mpc(N*bar_states + 1:N*bar_states + 3*forces, 1);
-   rrf_forces = zeros(3*forces, 1);
-   rrf_forces = -1 * grf_forces;
+   grf_legs = X_mpc(N*bar_states + 1:N*bar_states + 3*legs, 1);
+   rrf_legs = zeros(3*legs, 1);
+   rrf_legs = -1 * grf_legs;
 end
 
