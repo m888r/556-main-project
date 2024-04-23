@@ -8,8 +8,8 @@ function u = jointPD(qDes, q, dqDes, dq)
 %         kd_hip = 1;
 %         kd_thigh = 1;
 %         kd_calf = 1;
-    kp = 60*6;
-    kd = 10*10;
+    kp = 60;
+    kd = 10;
 
     u = kp .* (qDes - q) + kd .* (dqDes - dq); 
 end

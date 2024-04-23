@@ -1,10 +1,10 @@
-function rrf = locoController(X, pf, t, gaitname, q, dq)
+function [rrf,pdTorque] = locoController(X, pf, t, gaitname, q, dq)
 N = 10;
 dt = 0.03;
 gaitperiod = 0.06;
 legs = 4;
 rrf = zeros(12, 1);
-
+pdTorque = zeros(12,1);
 localSwingTimer = zeros(4,1);
 
 [currcontact, ftcontacts] = project_gait(t,N,dt, gaitperiod, gaitname);
@@ -13,6 +13,8 @@ if all(currcontact == 1) && all(ftcontacts == 1)
     qDes = stand(t);
     dqDes = zeros(12, 1);
     u = jointPD(qDes, q, dqDes, dq);
+    % u = ones(12,1);
+    pdTorque = u;
     rrf = torque_to_force(u, q);
     disp('standing')
 % Else, run mpc
