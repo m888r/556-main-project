@@ -6,7 +6,7 @@
     trajectory
 %}
 
-function rrf = swing_cartesian_PD(kP, kD, curr_t, T_stance, pf_start, pf_des, curr_pf, curr_dpf)
+function rrf = swing_cartesian_PD(kP, kD, curr_t, T_stance, pf_start, pf_des, curr_pf)
 
     rrf = zeros(12, 1);
     curr_pf = curr_pf;
