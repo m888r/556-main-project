@@ -6,10 +6,7 @@
     trajectory
 %}
 
-function rrf = swing_cartesian_PD(kP, kD, curr_t, T_stance, pf_start, pf_des, curr_pf)
-
-    rrf = zeros(12, 1);
-    curr_pf = curr_pf;
+function rrf = swing_cartesian_PD(kP, kD, curr_pf, curr_t, T_stance, pf_start, pf_des)
     
     % calculate the target position and end effector velocity
     [curr_pf_target, curr_dpf_target] = swing_trajectory(curr_t, T_stance, pf_start, pf_des);
