@@ -8,4 +8,7 @@ gait = 'standing';
 
 %mpc(X, pf, Xd, gait) 
 
-mpc_simulink(X, pf) 
+%mpc_simulink(X, pf);
+
+t = 1;
+qp_simulink(X, pf, t)
