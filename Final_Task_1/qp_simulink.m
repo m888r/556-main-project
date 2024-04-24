@@ -1,20 +1,21 @@
-function rrf_legs = qp_simulink(X, pf, t)
+function rrf_body = qp_simulink(X, pf, t)
 coder.extrinsic('quadprog');
 m = 12;
-F_max = 500;
-F_min = 10;
+F_max = 35;
+F_min = 0;
 mu = 0.5;
 I_b = diag([0.0168, 0.0565, 0.064]);
 legs = 4;
 grav = [0; 0; -9.81];
 
 % Control Parameters
-Kp_pos = diag([30, 30, 400]);
+Kp_pos = diag([30, 30, 50]);
 Kd_pos = diag([10, 10, 50]);
 Kp_ori = diag([10, 10, 10]);
 Kd_ori = diag([5, 5, 5]);
+% S_qp = diag([2, 2, 10, 1, 2, 1]);
 S_qp = diag([2, 2, 10, 1, 2, 1]);
-alpha = 0.01;
+alpha = 0.01;%0.01;
 
 % Desired Conditions
 Pd = [0; 0; 0.3];
@@ -44,7 +45,7 @@ A_iq = kron(eye(legs),Fiq_mat);
 temp_vec = [0; 0; 0; 0; F_max; -F_min];
 b_iq = [temp_vec; temp_vec; temp_vec; temp_vec];
 
-% Position of feet in world frame
+% Position of feet in world frame ORIENTATION
 r_f1 = pf(1:3) - P;
 r_f2 = pf(4:6) - P;
 r_f3 = pf(7:9) - P;
@@ -64,5 +65,15 @@ A = [A_eye; temp_mat];
 H = A'*S_qp*A + alpha*eye(legs*3);
 f = -A'*S_qp*bd_pd;
 
-rrf_legs = quadprog(H, f, A_iq, b_iq);
+
+grf_legs = quadprog(H, f, A_iq, b_iq);
+
+rrf_body = zeros(3*legs, 1);
+
+for ind = 0:legs-1
+    rrf_body(ind*3 + 1: ind*3 + 3,1) = -1 * R*grf_legs(ind*3 + 1: ind*3 + 3,1);
+end
+
+disp(rrf_body)
+
 end
