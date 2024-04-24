@@ -2,6 +2,10 @@
     THIS FUNCTION is what you call in mpc to output the forces, you add
     this to the mpc forces and you're good to go
 
+    NOTE: this doesn't work for turning yet because it only uses COM
+    velocity for foot placement, we need to use COM angular velocity too
+    for foot placement if we want to do turning too
+
     gait is a 4x1 vector of which legs are doing this stuff
     eg [1, 0, 1, 0] means FL swing, FR stance, RL swing, RR stance
 
@@ -9,10 +13,20 @@
     pf_all is all the foot positions
     dpf_all is all the foot velocities
     x is the robot state
-    K_step is the proportional controller to make the 
+    K_step is the proportional controller to make the robot step further
+    forward or further backwards if it's lagging or leading the desired
+    velocity v_des
+
+    curr_t is the current time, but it should hopefully reset somehow
+    depending on when gait was changed, so that it's always [0,
+    T_stance]... --> decide whether to reset this in MPC or in this
+    function using a persistent thing that tracks whether the gait has
+    changed (reset when gait changes, which is what we do in MPC rn)
+    
+    
 %}
 
-function rrfs = swing_control(gait, x, v_des, K_step, pf_all, dpf_all)
+function rrfs = swing_control(gait, x, v_des, K_step, pf_all, dpf_all, curr_t)
 
 % TODO: implement this function using the pseudocode below
 % for loop looping through each leg that's in swing phase, use gait to
