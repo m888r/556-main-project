@@ -22,26 +22,33 @@
     T_stance]... --> decide whether to reset this in MPC or in this
     function using a persistent thing that tracks whether the gait has
     changed (reset when gait changes, which is what we do in MPC rn)
+    UPDATE: it's being done in lococontroller.m
     
     
 %}
 
-function rrfs = swing_control(gait, x, v_des, K_step, pf_all, dpf_all, curr_t)
+function rrf = swing_control(p_hip, x, v_des, K_step, pf, dpf, curr_t, T_stance)
 
-% TODO: implement this function using the pseudocode below
-% for loop looping through each leg that's in swing phase, use gait to
-% decide which ones and whether to skip it or go to the next leg
-    % transform x(1:3) (com position) to find p_hip for the correct leg
-    % use p_hip v_des K_step and T_stance to find the foot placement policy
-    % for this leg with the foot_placement function
-    % use pf_des from the foot_placement function and swing_cartesian_PD to
-    % find the force needed from this leg
-% end for loop
-
-% output to rrfs, 12x1 vector of all the robot reaction forces in world
-% frame, needs to be rotated to body frame before being sent out of the
-% function, can do it here or can do it outside (probably outside after
-% adding it to the world frame MPC forces)
+    % update: only one foot at a time, don't need this for loop
+    % TODO: implement this function using the pseudocode below
+    % for loop looping through each leg that's in swing phase, use gait to
+    % decide which ones and whether to skip it or go to the next leg
+        % transform x(1:3) (com position) to find p_hip for the correct leg
+        % use p_hip v_des K_step and T_stance to find the foot placement policy
+        % for this leg with the foot_placement function
+        % use pf_des from the foot_placement function and swing_cartesian_PD to
+        % find the force needed from this leg
+    % end for loop
+    
+    pf_des = foot_placement(p_hip, x, v_des, K_step, T_stance);
+    kP = 10;
+    kD = 0.1;
+    rrf = swing_cartesian_PD(kP, kD, pf, dpf, curr_t, T_stance, pf_start, pf_des);
+    
+    % output to rrfs, 12x1 vector of all the robot reaction forces in world
+    % frame, needs to be rotated to body frame before being sent out of the
+    % function, can do it here or can do it outside (probably outside after
+    % adding it to the world frame MPC forces)
 
 end
 
@@ -60,12 +67,12 @@ end
     trajectory
 %}
 
-function rrf = swing_cartesian_PD(kP, kD, curr_pf, curr_t, T_stance, pf_start, pf_des)
+function rrf = swing_cartesian_PD(kP, kD, curr_pf, curr_dpf, curr_t, T_stance, pf_start, pf_des)
     
     % calculate the target position and end effector velocity
     [curr_pf_target, curr_dpf_target] = swing_trajectory(curr_t, T_stance, pf_start, pf_des);
 
-    rrf = kP*(curr_pf_target - curr_pf) + kD*(dpf_target - curr_dpf_target);
+    rrf = kP*(curr_pf_target - curr_pf) + kD*(curr_dpf_target - curr_dpf);
     
 end
 
