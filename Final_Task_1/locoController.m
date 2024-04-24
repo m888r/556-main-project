@@ -15,8 +15,19 @@ if all(currcontact == 1) && all(ftcontacts == 1)
     u = jointPD(qDes, q, dqDes, dq);
     % u = ones(12,1);
     pdTorque = u;
-    rrf = torque_to_force(u, q);
-    disp('standing')
+    % rrf = torque_to_force(u, q);
+
+    R = eul2rotm(X(4:6)');
+    Kp_front = -30;
+    Kp_back = -30;
+
+    Kd_front = -10;
+    Kd_back = -10;
+    Fbody_front = R'*[0;0;Kp_front * (0.2 - X(3)) + Kd_front * (0 - X(9))]
+    Fbody_back = R'*[0;0;Kp_back * (0.2 - X(3)) + Kd_back * (0 - X(9))]
+    
+    rrf = [Fbody_front;Fbody_front;Fbody_back;Fbody_back];
+
 % Else, run mpc
 else
     disp('mpc')
