@@ -2,20 +2,28 @@ function rrf_body = qp_simulink(X, pf, t)
 coder.extrinsic('quadprog');
 m = 12;
 F_max = 35;
-F_min = 0;
+F_min = -10;
 mu = 0.5;
 I_b = diag([0.0168, 0.0565, 0.064]);
 legs = 4;
 grav = [0; 0; -9.81];
 
-% Control Parameters
-Kp_pos = diag([30, 30, 50]);
-Kd_pos = diag([10, 10, 50]);
-Kp_ori = diag([10, 15, 10]);
-Kd_ori = diag([5, 15, 5]);
+% Control Parameters from HW
+% Kp_pos = diag([30, 30, 400]);
+% Kd_pos = diag([10, 10, 50]);
+% Kp_ori = diag([10, 10, 10]);
+% Kd_ori = diag([5, 5, 5]);
 % S_qp = diag([2, 2, 10, 1, 2, 1]);
-S_qp = diag([2, 2, 10, 1, 10, 1]);
-alpha = 0.01;%0.01;
+% alpha = 0.01;
+
+
+% Control Parameters
+Kp_pos = diag([30, 40, 80]);
+Kd_pos = diag([10, 30, 100]);
+Kp_ori = diag([10, 20, 10]);
+Kd_ori = diag([5, 100, 5]);
+S_qp = diag([2, 500, 1, 1, 5000, 100]);
+alpha = 0.01;
 
 % Desired Conditions
 Pd = [0; 0; 0.2];
