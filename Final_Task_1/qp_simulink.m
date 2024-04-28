@@ -18,11 +18,13 @@ grav = [0; 0; -9.81];
 
 
 % Control Parameters
-Kp_pos = diag([30, 40, 80]);
+Kp_pos = diag([100, 40, 500]);
 Kd_pos = diag([10, 30, 100]);
-Kp_ori = diag([10, 20, 10]);
-Kd_ori = diag([5, 100, 5]);
-S_qp = diag([2, 500, 1, 1, 5000, 100]);
+%Kp_ori = diag([10, 300, 100]);
+Kp_ori = diag([50, 600, 200]);
+Kd_ori = diag([5, 50, 5]);
+%S_qp = diag([2, 500, 1, 1, 5000, 200]);
+S_qp = diag([2, 500, 400, 1, 5000, 200]);
 alpha = 0.01;
 
 % Desired Conditions
