@@ -31,7 +31,7 @@ if all(currcontact == 1) && all(ftcontacts == 1)
     rrf = qp_simulink(X, pf, t);
 % Else, run mpc
 else
-    disp('mpc')
+    disp('mpc');
     % If leg starts swing phase, run swing control for it
     rrf_swing = zeros(12, 1);
     ftcontact_next = ftcontacts(1:legs);
