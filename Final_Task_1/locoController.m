@@ -1,4 +1,4 @@
-function [rrf,pdTorque] = locoController(X, pf, t, gaitname, q, dq)
+function [rrf,pdTorque] = locoController(X, pf, t, q, dq)
 N = 10;
 dt = 0.03;
 gaitperiod = 0.06;
@@ -7,6 +7,8 @@ rrf = zeros(12, 1);
 pdTorque = zeros(12,1);
 localSwingTimer = zeros(4,1);
 
+gaitname = gaitScheduler(X, pf, t);
+disp(gaitname)
 [currcontact, ftcontacts] = project_gait(t,N,dt, gaitperiod, gaitname);
 % If current and future contacts are all 1, do standing PD
 if all(currcontact == 1) && all(ftcontacts == 1)
