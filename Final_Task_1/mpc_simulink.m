@@ -58,7 +58,7 @@ ftcontact_prev = params.ftcontact_prev;
    % Inequality constraints b_iq
    b_iq = zeros(6*N*legs, 1);
    for ind = 1:6:6*N*legs
-       alpha = ftcontacts(ind);
+       alpha = ftcontacts(floor(ind/6) + 1);
        b_iq(ind:ind + 5, 1) = [0; 0; 0; 0; alpha*F_max; -alpha*F_min];
    end
 
