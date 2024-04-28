@@ -1,7 +1,13 @@
 function [currcontact, ftcontacts] = project_gait(t,N,dt, gaitperiod, gaitname)
 persistent currgait
+persistent t_gaitchange
+
 if isempty(currgait)
     currgait = "standing";
+end
+
+if isempty(t_gaitchange)
+    t_gaitchange = 0;
 end
 
 gait_ref = [0;0;0;0];
@@ -14,39 +20,45 @@ elseif isequal(gaitname, "bounding")
 end
 gait_states = length(gait_ref)/4;
 
+if ~isequal(currgait, gaitname)
+    t_gaitchange = t;
+end
+
+gait_t = t - t_gaitchange;
+
 % Default contact on all feet if last known state was standing
 if isequal(currgait, "standing")
     currcontact = [1; 1; 1; 1];
 else
-
-% Current gait state based on current time
-curr_state = floor(t/gaitperiod) + 1;
-% If at the gait switch time, current state defaults to state before
-% switching
-if mod(t, gaitperiod) == 0
-    curr_state = curr_state - 1;
-end
-
-% Current gait state starting index in gait_ref
-curr_startind = (curr_state - 1)*4 + 1;
-% If current start index is greater than the gait_ref given, loop around
-% and update gait_ref
-if curr_startind > gait_states*4
-    curr_startind = mod(curr_startind, gait_states*4);
-end
-currcontact = gait_ref(curr_startind:curr_startind+3);
-
+    
+    % Current gait state based on current time
+    curr_state = floor(gait_t/gaitperiod) + 1;
+    % If at the gait switch time, current state defaults to state before
+    % switching
+    if mod(gait_t, gaitperiod) == 0
+        curr_state = curr_state - 1;
+    end
+    
+    % Current gait state starting index in gait_ref
+    curr_startind = (curr_state - 1)*4 + 1;
+    % If current start index is greater than the gait_ref given, loop around
+    % and update gait_ref
+    if curr_startind > gait_states*4
+        curr_startind = mod(curr_startind, gait_states*4);
+    end
+    currcontact = gait_ref(curr_startind:curr_startind+3);
+    
 end
 
 % Repeat above process for N times to get future foot contacts
 ftcontacts = zeros(4*N,1);
 for ind = 1:N
-    temp_time = t + ind*dt;
+    temp_time = gait_t + ind*dt;
     temp_state = floor(temp_time/gaitperiod) + 1;
     if mod(temp_time, gaitperiod) == 0
         temp_state = temp_state - 1;
     end
-
+    
     temp_startind = (temp_state - 1)*4 + 1;
     if temp_startind > gait_states*4
         temp_startind = mod(temp_startind, gait_states*4);

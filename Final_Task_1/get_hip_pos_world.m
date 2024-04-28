@@ -9,7 +9,7 @@ function [p_hip_all] = get_hip_pos_world(x)
     % transform to all the hips for each leg and output hip positions as:
     % FL, FR, RL, RR
     % only rotate to world frame, no offset
-    R = eul2rotm(x(4:6));
+    R = eul2rotm(x(4:6)');
     
     hip_FL = R * [offset_x; offset_y; offset_z];
     hip_FR = R * [offset_x; -offset_y; offset_z];

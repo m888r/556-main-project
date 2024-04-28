@@ -29,71 +29,72 @@
 
 function rrf = swing_control(x, v_des, K_step, pf, dpf, t, T_stance, curr_contact, ftcontact_next)
 
-    persistent localSwingTimer;
-    persistent swingTimerStartTimes;
-    persistent pf_des;
-    persistent pf_start;
+persistent localSwingTimer;
+persistent swingTimerStartTimes;
+persistent pf_des;
+persistent pf_start;
 
-    if isempty(pf_start)
-        pf_start = zeros(4, 1);
-    end
+if isempty(pf_start)
+    pf_start = zeros(12, 1);
+end
 
-    if isempty(pf_des)
-        pf_des = zeros(4, 1);
-    end
+if isempty(pf_des)
+    pf_des = zeros(12, 1);
+end
 
-    if isempty(localSwingTimer)
-        localSwingTimer = zeros(4, 1);
-    end
-    if isempty(swingTimerStartTimes)
-        swingTimerStartTimes = zeros(4, 1);
-    end
-    
-    hips = get_hip_pos_world(x);
+if isempty(localSwingTimer)
+    localSwingTimer = zeros(4, 1);
+end
+if isempty(swingTimerStartTimes)
+    swingTimerStartTimes = zeros(4, 1);
+end
 
-    for ind = 1:4
-        if curr_contact(ind) == 1 && ftcontact_next(ind) == 0
-            swingTimerStartTimes(ind) = t;
-            pf_start = pf(ind*3 - 2:ind*3);
-            pf_des = foot_placement(hips(ind*3 - 2:ind*3), x, v_des, K_step, T_stance);
-        end
-        localSwingTimer(ind) = t - swingTimerStartTimes(ind);
-    end
+hips = get_hip_pos_world(x);
 
-    % update: only one foot at a time, don't need this for loop or the 12x1
-    % rrf, instead do 3x1 rrf
-    % TODO: implement this function using the pseudocode below
-    % for loop looping through each leg that's in swing phase, use gait to
-    % decide which ones and whether to skip it or go to the next leg
-        % transform x(1:3) (com position) to find p_hip for the correct leg
-        % use p_hip v_des K_step and T_stance to find the foot placement policy
-        % for this leg with the foot_placement function
-        % use pf_des from the foot_placement function and swing_cartesian_PD to
-        % find the force needed from this leg
-    % end for loop
-    
-    rrf = zeros(12, 1);
-    for i = 1:4
-        if ftcontact_next(i) == 0
-            kP = 10;
-            kD = 0.1;
-            rrf(i*3-2:i*3) = swing_cartesian_PD(kP, kD, pf, dpf, curr_t, T_stance, pf_start, pf_des);
-        end
+for ind = 1:4
+    if curr_contact(ind) == 1 && ftcontact_next(ind) == 0
+        swingTimerStartTimes(ind) = t;
+        pf_start(ind*3 - 2:ind*3) = pf(ind*3 - 2:ind*3);
+        pf_des(ind*3 - 2:ind*3) = foot_placement(hips(ind*3 - 2:ind*3), x, v_des, K_step, T_stance);
     end
-    
-    % output to rrfs, 12x1 vector of all the robot reaction forces in world
-    % frame, needs to be rotated to body frame before being sent out of the
-    % function, can do it here or can do it outside (probably outside after
-    % adding it to the world frame MPC forces)
+    localSwingTimer(ind) = t - swingTimerStartTimes(ind);
+end
+
+% update: only one foot at a time, don't need this for loop or the 12x1
+% rrf, instead do 3x1 rrf
+% TODO: implement this function using the pseudocode below
+% for loop looping through each leg that's in swing phase, use gait to
+% decide which ones and whether to skip it or go to the next leg
+% transform x(1:3) (com position) to find p_hip for the correct leg
+% use p_hip v_des K_step and T_stance to find the foot placement policy
+% for this leg with the foot_placement function
+% use pf_des from the foot_placement function and swing_cartesian_PD to
+% find the force needed from this leg
+% end for loop
+
+rrf = zeros(12, 1);
+for i = 1:4
+    if ftcontact_next(i) == 0
+        kP = 100;
+        kD = 0;
+        curr_t = localSwingTimer(i);
+        rrf(i*3-2:i*3) = swing_cartesian_PD(kP, kD, pf(i*3-2:i*3), dpf(i*3-2:i*3), curr_t, T_stance, pf_start(i*3-2:i*3), pf_des(i*3-2:i*3));
+    end
+end
+
+% output to rrfs, 12x1 vector of all the robot reaction forces in world
+% frame, needs to be rotated to body frame before being sent out of the
+% function, can do it here or can do it outside (probably outside after
+% adding it to the world frame MPC forces)
 
 end
 
 % change this for stairs, and change it for turning
 function pf_des = foot_placement(p_hip, x, v_des, K_step, T_stance)
-    
-    v_com = [x(7); x(8); 0];
-    pf_des = [p_hip(1); p_hip(2); 0] + (T_stance/2)*v_com + K_step*(v_com - v_des);
-    
+
+v_com = [x(7); x(8); 0];
+pf_des = [p_hip(1); p_hip(2); 0] + (T_stance/2)*v_com + K_step*(v_com - v_des);
+
 end
 
 %{
@@ -105,12 +106,12 @@ end
 %}
 
 function rrf = swing_cartesian_PD(kP, kD, curr_pf, curr_dpf, curr_t, T_stance, pf_start, pf_des)
-    
-    % calculate the target position and end effector velocity
-    [curr_pf_target, curr_dpf_target] = swing_trajectory(curr_t, T_stance, pf_start, pf_des);
 
-    rrf = kP*(curr_pf_target - curr_pf) + kD*(curr_dpf_target - curr_dpf);
-    
+% calculate the target position and end effector velocity
+[curr_pf_target, curr_dpf_target] = swing_trajectory(curr_t, T_stance, pf_start, pf_des);
+
+rrf = kP*(curr_pf_target - curr_pf) + kD*(curr_dpf_target - curr_dpf);
+
 end
 
 %{
@@ -121,14 +122,14 @@ end
     pf_des = foot position at end of trajectory [x, y, z]
 %}
 function [curr_pf_target, curr_dpf_target] = swing_trajectory(curr_t, T_stance, pf_start, pf_des)
-    % implement a linearly interpolated trajectory from pf_start to pf_des
-    t = curr_t / T_stance;
-    P_height = 0.1; % height control point is at z=0.1
-    P0 = pf_start;
-    P1 = [(pf_des(1) - pf_start(1)) / 2, (pf_des(2) - pf_start(2)) / 2, P_height];
-    P2 = pf_des;
-    
-    % 2nd order bezier: (1-t)^2 * P0 * 2 + 2*(1-t)*t*P1 + t^2*P2
-    curr_pf_target = P0.*(1-t)^2 + 2.*t.*P1.*(1-t) + P2.*(t^2);
-    curr_dpf_target = [0; 0; 0];
+% implement a linearly interpolated trajectory from pf_start to pf_des
+t = curr_t / T_stance;
+P_height = 0.1; % height control point is at z=0.1
+P0 = pf_start;
+P1 = [(pf_des(1) - pf_start(1)) / 2; (pf_des(2) - pf_start(2)) / 2; P_height];
+P2 = pf_des;
+
+% 2nd order bezier: (1-t)^2 * P0 * 2 + 2*(1-t)*t*P1 + t^2*P2
+curr_pf_target = P0.*(1-t)^2 + 2.*t.*P1.*(1-t) + P2.*(t^2);
+curr_dpf_target = [0; 0; 0];
 end

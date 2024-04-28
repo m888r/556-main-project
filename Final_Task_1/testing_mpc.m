@@ -17,4 +17,5 @@ t = 1;
 N = 10;
 dt = 0.03;
 [currcontact, ftcontacts] = project_gait(t,N,dt, gaitperiod, gaitname);
-mpc_simulink(X, pf, t, N, dt, ftcontacts)
+
+mpc_simulink(X, Xd, pf, t, N,dt, ftcontacts);

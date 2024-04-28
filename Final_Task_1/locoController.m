@@ -1,4 +1,4 @@
-function [rrf,pdTorque] = locoController(X, pf, dpf, t, q, dq)
+function rrf = locoController(X, pf, dpf, t, q, dq)
 persistent last_mpc_run;
 persistent rrf_mpc;
 
@@ -12,27 +12,26 @@ end
 
 N = 10;
 mpc_dt = 0.03;
-gaitperiod = 0.06;
+gaitperiod = 0.09;
 legs = 4;
 rrf = zeros(12, 1);
-pdTorque = zeros(12,1);
 
 Xd = [0; 0; 0.2; zeros(3,1); zeros(3,1); zeros(3,1)];
 
-walking_Xd = [0; 0; 0.2; 0.1; zeros(3,1); zeros(3,1)];
+walking_Xd = [0; 0; 0.2; 0.1; 0; 0; zeros(3,1); zeros(3,1)];
 
 gaitname = gaitScheduler(X, pf, t);
 disp(gaitname)
 [currcontact, ftcontacts] = project_gait(t,N,mpc_dt, gaitperiod, gaitname);
 % If current and future contacts are all 1, do standing PD
-if isequal(gaitname, "standing");
+if isequal(gaitname, "standing")
     % Joint PD
     % qDes = stand(t);
     % dqDes = zeros(12, 1);
     % u = jointPD(qDes, q, dqDes, dq);
     % pdTorque = u;
     % rrf = torque_to_force(u, q);
-
+    
     % Cartesian PD?
     % R = eul2rotm(X(4:6)');
     % Kp_front = -30;
@@ -42,16 +41,16 @@ if isequal(gaitname, "standing");
     % Fbody_front = R'*[0;0;Kp_front * (0.2 - X(3)) + Kd_front * (0 - X(9))]
     % Fbody_back = R'*[0;0;Kp_back * (0.2 - X(3)) + Kd_back * (0 - X(9))]
     % rrf = [Fbody_front;Fbody_front;Fbody_back;Fbody_back];
-
+    
     % QP
     rrf = qp_simulink(X, pf, t);
-% Else, run mpc
+    % Else, run mpc
 else
     disp('mpc');
     % If leg starts swing phase, run swing control for it
-
+    
     rrf_swing = swing_control(X, walking_Xd(4:6), 0.1, pf, dpf, t, gaitperiod, currcontact, ftcontacts);
-
+    
     if (t - last_mpc_run) >= mpc_dt
         rrf_mpc = mpc_simulink(X, walking_Xd, pf, t, N, mpc_dt, ftcontacts);
         last_mpc_run = t;
