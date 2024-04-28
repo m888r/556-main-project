@@ -39,8 +39,8 @@ else
     ftcontact_next = ftcontacts(1:legs);
     for ind = 1:legs
         if ftcontact_next(ind) == 0
+            % Reset local timer if at start of swing phase
             if currcontact == 1
-            % reset local timer to 0
                 localSwingTimer(ind) = 0;
             end
             % iterate swing with local timer
