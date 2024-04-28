@@ -1,6 +1,5 @@
-function rrf_legs = mpc_simulink(X, pf, t, N, dt, ftcontacts)
+function rrf_legs = mpc_simulink(X, Xd, pf, t, N, dt, ftcontacts)
 coder.extrinsic('quadprog');
-   Xd = [0; 0; 0.2; zeros(3,1); zeros(3,1); zeros(3,1)];
    P = X(1:3);
    ypr = X(4:6);
    X_bard = [Xd; 9.81];

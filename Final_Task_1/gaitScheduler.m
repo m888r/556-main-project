@@ -3,7 +3,7 @@ function gaitname = gaitScheduler(X, pf, t)
         gaitname = "standing";
     else
         gaitname = "trotting";
-
+        
 
     end
 end

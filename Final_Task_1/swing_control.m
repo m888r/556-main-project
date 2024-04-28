@@ -27,9 +27,41 @@
     
 %}
 
-function rrf = swing_control(p_hip, x, v_des, K_step, pf, dpf, curr_t, T_stance)
+function rrf = swing_control(x, v_des, K_step, pf, dpf, t, T_stance, curr_contact, ftcontact_next)
 
-    % update: only one foot at a time, don't need this for loop
+    persistent localSwingTimer;
+    persistent swingTimerStartTimes;
+    persistent pf_des;
+    persistent pf_start;
+
+    if isempty(pf_start)
+        pf_start = zeros(4, 1);
+    end
+
+    if isempty(pf_des)
+        pf_des = zeros(4, 1);
+    end
+
+    if isempty(localSwingTimer)
+        localSwingTimer = zeros(4, 1);
+    end
+    if isempty(swingTimerStartTimes)
+        swingTimerStartTimes = zeros(4, 1);
+    end
+    
+    hips = get_hip_pos_world(x);
+
+    for ind = 1:4
+        if curr_contact(ind) == 1 && ftcontact_next(ind) == 0
+            swingTimerStartTimes(ind) = t;
+            pf_start = pf(ind*3 - 2:ind*3);
+            pf_des = foot_placement(hips(ind*3 - 2:ind*3), x, v_des, K_step, T_stance);
+        end
+        localSwingTimer(ind) = t - swingTimerStartTimes(ind);
+    end
+
+    % update: only one foot at a time, don't need this for loop or the 12x1
+    % rrf, instead do 3x1 rrf
     % TODO: implement this function using the pseudocode below
     % for loop looping through each leg that's in swing phase, use gait to
     % decide which ones and whether to skip it or go to the next leg
@@ -40,10 +72,14 @@ function rrf = swing_control(p_hip, x, v_des, K_step, pf, dpf, curr_t, T_stance)
         % find the force needed from this leg
     % end for loop
     
-    pf_des = foot_placement(p_hip, x, v_des, K_step, T_stance);
-    kP = 10;
-    kD = 0.1;
-    rrf = swing_cartesian_PD(kP, kD, pf, dpf, curr_t, T_stance, pf_start, pf_des);
+    rrf = zeros(12, 1);
+    for i = 1:4
+        if ftcontact_next(i) == 0
+            kP = 10;
+            kD = 0.1;
+            rrf(i*3-2:i*3) = swing_cartesian_PD(kP, kD, pf, dpf, curr_t, T_stance, pf_start, pf_des);
+        end
+    end
     
     % output to rrfs, 12x1 vector of all the robot reaction forces in world
     % frame, needs to be rotated to body frame before being sent out of the
@@ -52,10 +88,11 @@ function rrf = swing_control(p_hip, x, v_des, K_step, pf, dpf, curr_t, T_stance)
 
 end
 
+% change this for stairs, and change it for turning
 function pf_des = foot_placement(p_hip, x, v_des, K_step, T_stance)
     
-    v_com = x(7:9);
-    pf_des = p_hip + (T_stance/2)*v_com + K_step*(v_com - v_des);
+    v_com = [x(7); x(8); 0];
+    pf_des = [p_hip(1); p_hip(2); 0] + (T_stance/2)*v_com + K_step*(v_com - v_des);
     
 end
 

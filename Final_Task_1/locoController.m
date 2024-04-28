@@ -1,17 +1,31 @@
-function [rrf,pdTorque] = locoController(X, pf, t, q, dq)
+function [rrf,pdTorque] = locoController(X, pf, dpf, t, q, dq)
+persistent last_mpc_run;
+persistent rrf_mpc;
+
+if isempty(rrf_mpc)
+    rrf_mpc = zeros(12, 1);
+end
+
+if isempty(last_mpc_run)
+    last_mpc_run = 0;
+end
+
 N = 10;
-dt = 0.03;
+mpc_dt = 0.03;
 gaitperiod = 0.06;
 legs = 4;
 rrf = zeros(12, 1);
 pdTorque = zeros(12,1);
-localSwingTimer = zeros(4,1);
+
+Xd = [0; 0; 0.2; zeros(3,1); zeros(3,1); zeros(3,1)];
+
+walking_Xd = [0; 0; 0.2; 0.1; zeros(3,1); zeros(3,1)];
 
 gaitname = gaitScheduler(X, pf, t);
 disp(gaitname)
-[currcontact, ftcontacts] = project_gait(t,N,dt, gaitperiod, gaitname);
+[currcontact, ftcontacts] = project_gait(t,N,mpc_dt, gaitperiod, gaitname);
 % If current and future contacts are all 1, do standing PD
-if all(currcontact == 1) && all(ftcontacts == 1)
+if isequal(gaitname, "standing");
     % Joint PD
     % qDes = stand(t);
     % dqDes = zeros(12, 1);
@@ -35,21 +49,14 @@ if all(currcontact == 1) && all(ftcontacts == 1)
 else
     disp('mpc');
     % If leg starts swing phase, run swing control for it
-    rrf_swing = zeros(12, 1);
-    ftcontact_next = ftcontacts(1:legs);
-    for ind = 1:legs
-        if ftcontact_next(ind) == 0
-            % Reset local timer if at start of swing phase
-            if currcontact == 1
-                localSwingTimer(ind) = 0;
-            end
-            % iterate swing with local timer
-            % [pf, dpf] = swing_trajectory()
-            % rrf_swing(ind*3 - 2: ind*3) = swing_control()
-        end
-    end
 
-    rrf_mpc = mpc_simulink(X, pf, t, N, dt, ftcontacts);
+    rrf_swing = swing_control(X, walking_Xd(4:6), 0.1, pf, dpf, t, gaitperiod, currcontact, ftcontacts);
+
+    if (t - last_mpc_run) >= mpc_dt
+        rrf_mpc = mpc_simulink(X, walking_Xd, pf, t, N, mpc_dt, ftcontacts);
+        last_mpc_run = t;
+    end
+    
     % Add robot reaction forces from swing and mpc
     rrf = rrf_swing + rrf_mpc;
 end
