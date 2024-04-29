@@ -28,12 +28,19 @@ grav = [0; 0; -9.81];
 % alpha = 0.01;
 
 % Control Parameters -- Junheng Advice
-Kp_pos = diag([100, 100, 300]);
-Kd_pos = diag([30, 30, 30]);
-Kp_ori = diag([100, 500, 100]);
+Kp_pos = diag([200, 100, 400]);
+Kd_pos = diag([30, 30, 10]);
+Kp_ori = diag([100, 100, 100]);
 Kd_ori = diag([30, 30, 30]);
 S_qp = diag([2, 2, 10, 1, 2, 1]);
 alpha = 0.01;
+%works with our custom jacobian
+% Kp_pos = diag([100, 100, 300]);
+% Kd_pos = diag([30, 30, 30]);
+% Kp_ori = diag([100, 500, 100]);
+% Kd_ori = diag([30, 30, 30]);
+% S_qp = diag([2, 2, 10, 1, 2, 1]);
+% alpha = 0.01;
 
 
 % Desired Conditions

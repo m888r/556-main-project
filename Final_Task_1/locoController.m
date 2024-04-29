@@ -18,7 +18,7 @@ rrf = zeros(12, 1);
 
 Xd = [0; 0; 0.2; zeros(3,1); zeros(3,1); zeros(3,1)];
 
-walking_Xd = [0; 0; 0.2; 0.1; 0; 0; zeros(3,1); zeros(3,1)];
+walking_Xd = [0; 0; 0.2; 0; 0; 0; zeros(3,1); zeros(3,1)];
 
 gaitname = gaitScheduler(X, pf, t);
 disp(gaitname)

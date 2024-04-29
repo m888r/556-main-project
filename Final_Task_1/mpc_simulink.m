@@ -10,8 +10,9 @@ bar_states = 13;
 % dt = 0.03;
 Xmpc_elem = bar_states*N + legs*3*N;
 % Q, R values from HW4 #2(b)
-Q = diag([40, 50, 60, 10, 10, 10, 4, 4, 4, 1, 1, 1, 0]);
-R = 0.00001*eye(legs*3);
+% Q = diag([40, 50, 60, 10, 10, 10, 4, 4, 4, 1, 1, 1, 0]);
+Q = diag([40, 50, 60, 30, 30, 10, 4, 4, 4, 1, 1, 1, 0]);
+R = 0.0001*eye(legs*3);
 m = 12;
 F_max = 500;
 F_min = 10;
