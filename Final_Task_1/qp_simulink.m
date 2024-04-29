@@ -1,8 +1,8 @@
 function rrf_body = qp_simulink(X, pf, t)
 coder.extrinsic('quadprog');
 m = 12;
-F_max = 35;
-F_min = -10;
+F_max = 500;
+F_min = 0;
 mu = 0.5;
 I_b = diag([0.0168, 0.0565, 0.064]);
 legs = 4;
@@ -18,22 +18,28 @@ grav = [0; 0; -9.81];
 
 
 % Control Parameters
-% Kp_pos = diag([100, 40, 500]);
-% Kd_pos = diag([10, 30, 100]);
-% %Kp_ori = diag([10, 300, 100]);
-% Kp_ori = diag([50, 600, 200]);
-% Kd_ori = diag([5, 50, 5]);
-% %S_qp = diag([2, 500, 1, 1, 5000, 200]);
-% S_qp = diag([2, 500, 400, 1, 5000, 200]);
+% Kp_pos = diag([30, 30, 400]);
+% Kd_pos = diag([10, 10, 50]);
+% Kp_ori = diag([10, 130, 10]);
+% Kd_ori = diag([5, 20, 5]);
+% S_qp = diag([2, 2, 10, 1, 2, 1]);
 % alpha = 0.01;
 
-% Control Parameters -- Junheng Advice
-Kp_pos = diag([200, 100, 400]);
-Kd_pos = diag([30, 30, 10]);
-Kp_ori = diag([100, 100, 100]);
-Kd_ori = diag([30, 30, 30]);
+Kp_pos = diag([30, 30, 400]);
+Kd_pos = diag([10, 10, 50]);
+Kp_ori = diag([10, 110, 10]);
+Kd_ori = diag([5, 5, 5]);
 S_qp = diag([2, 2, 10, 1, 2, 1]);
 alpha = 0.01;
+
+
+% Control Parameters -- Junheng Advice
+% Kp_pos = diag([100, 100, 100]);
+% Kd_pos = diag([30, 30, 10]);
+% Kp_ori = diag([100, 100, 100]);
+% Kd_ori = diag([30, 30, 30]);
+% S_qp = diag([2, 2, 10, 1, 2, 1]);
+% alpha = 0.01;
 %works with our custom jacobian
 % Kp_pos = diag([100, 100, 300]);
 % Kd_pos = diag([30, 30, 30]);
