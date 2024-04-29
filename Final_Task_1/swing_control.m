@@ -76,13 +76,18 @@ end
 % find the force needed from this leg
 % end for loop
 
+ypr = x(4:6);
+Rot = eul2rotm(ypr');
 rrf = zeros(12, 1);
 for i = 1:4
     if ftcontact_next(i) == 0
         kP = 100;
         kD = 20;
         curr_t = localSwingTimer(i);
-        rrf(i*3-2:i*3) = swing_cartesian_PD(kP, kD, pf(i*3-2:i*3), dpf(i*3-2:i*3), curr_t, T_stance, pf_start(i*3-2:i*3), pf_des(i*3-2:i*3));
+        rrf(i*3-2:i*3) = Rot'*swing_cartesian_PD(kP, kD, pf(i*3-2:i*3), dpf(i*3-2:i*3), curr_t, T_stance, pf_start(i*3-2:i*3), pf_des(i*3-2:i*3));
+        %rotating rrf into body frame
+        
+        
     end
 end
 
@@ -90,6 +95,9 @@ end
 % frame, needs to be rotated to body frame before being sent out of the
 % function, can do it here or can do it outside (probably outside after
 % adding it to the world frame MPC forces)
+
+
+
 end
 
 
