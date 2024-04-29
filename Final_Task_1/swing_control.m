@@ -51,6 +51,9 @@ if isempty(swingTimerStartTimes)
 end
 
 hips = get_hip_pos_world(x);
+if t < 0.3
+    disp(hips);
+end
 
 for ind = 1:4
     if curr_contact(ind) == 1 && ftcontact_next(ind) == 0
@@ -87,8 +90,8 @@ end
 % frame, needs to be rotated to body frame before being sent out of the
 % function, can do it here or can do it outside (probably outside after
 % adding it to the world frame MPC forces)
-
 end
+
 
 % change this for stairs, and change it for turning
 function pf_des = foot_placement(p_hip, x, v_des, K_step, T_stance)
@@ -129,6 +132,8 @@ P_height = 0.1; % height control point is at z=0.1
 P0 = pf_start;
 P1 = [(pf_des(1) - pf_start(1)) / 2; (pf_des(2) - pf_start(2)) / 2; P_height];
 P2 = pf_des;
+
+
 
 % 2nd order bezier: (1-t)^2 * P0 * 2 + 2*(1-t)*t*P1 + t^2*P2
 curr_pf_target = P0.*(1-t)^2 + 2.*t.*P1.*(1-t) + P2.*(t^2);

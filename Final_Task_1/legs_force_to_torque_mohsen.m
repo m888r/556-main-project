@@ -10,7 +10,7 @@ for ind = 1:4
     q = Q(3*ind-2:3*ind);
     f = F(3*ind-2:3*ind);
     J = computeLegJacobian(q,ind);
-    torques(3*ind-2:3*ind) = pinv(J)*f;
+    torques(3*ind-2:3*ind) = J'*f;
 end
 
 
