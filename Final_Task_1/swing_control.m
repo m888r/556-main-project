@@ -45,6 +45,7 @@ end
 if isempty(localSwingTimer)
     localSwingTimer = zeros(4, 1);
 end
+
 if isempty(swingTimerStartTimes)
     swingTimerStartTimes = zeros(4, 1);
 end
