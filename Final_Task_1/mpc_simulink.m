@@ -134,7 +134,7 @@ Rot = eul2rotm(ypr');
 
 
 for ind = 0:legs-1
-    rrf_legs(ind*3 + 1: ind*3 + 3,1) = -1 * Rot*grf_legs(ind*3 + 1: ind*3 + 3,1);
+    rrf_legs(ind*3 + 1: ind*3 + 3,1) = -1 * Rot'*grf_legs(ind*3 + 1: ind*3 + 3,1);
 end
 
 end

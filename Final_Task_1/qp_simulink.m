@@ -11,31 +11,24 @@ grav = [0; 0; -9.81];
 % Control Parameters from HW
 % Kp_pos = diag([30, 30, 400]);
 % Kd_pos = diag([10, 10, 50]);
-% Kp_ori = diag([10, 10, 10]);
+% Kp_ori = diag([100, 10, 10]);
 % Kd_ori = diag([5, 5, 5]);
 % S_qp = diag([2, 2, 10, 1, 2, 1]);
 % alpha = 0.01;
 
 
 % Control Parameters
-% Kp_pos = diag([30, 30, 400]);
-% Kd_pos = diag([10, 10, 50]);
-% Kp_ori = diag([10, 130, 10]);
-% Kd_ori = diag([5, 20, 5]);
-% S_qp = diag([2, 2, 10, 1, 2, 1]);
-% alpha = 0.01;
-
 Kp_pos = diag([30, 30, 400]);
 Kd_pos = diag([10, 10, 50]);
-Kp_ori = diag([10, 110, 10]);
-Kd_ori = diag([5, 5, 5]);
+Kp_ori = diag([900, 300, 10]);
+Kd_ori = diag([80, 50, 50]);
 S_qp = diag([2, 2, 10, 1, 2, 1]);
 alpha = 0.01;
 
 
 % Control Parameters -- Junheng Advice
 % Kp_pos = diag([100, 100, 100]);
-% Kd_pos = diag([30, 30, 10]);
+% Kd_pos = diag([30, 30, 30]);
 % Kp_ori = diag([100, 100, 100]);
 % Kd_ori = diag([30, 30, 30]);
 % S_qp = diag([2, 2, 10, 1, 2, 1]);
@@ -103,7 +96,7 @@ grf_legs = quadprog(H, f, A_iq, b_iq);
 rrf_body = zeros(3*legs, 1);
 
 for ind = 0:legs-1
-    rrf_body(ind*3 + 1: ind*3 + 3,1) = -1 * R*grf_legs(ind*3 + 1: ind*3 + 3,1);
+    rrf_body(ind*3 + 1: ind*3 + 3,1) = -1 * R'*grf_legs(ind*3 + 1: ind*3 + 3,1);
 end
 
 disp(rrf_body)
