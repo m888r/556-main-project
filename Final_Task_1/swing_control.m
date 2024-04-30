@@ -27,7 +27,7 @@
     
 %}
 
-function rrf = swing_control(x, v_des, K_step, pf, dpf, t, T_stance, curr_contact, ftcontact_next)
+function rrf = swing_control(x, v_des, K_step, pf_w, dpf, t, T_stance, curr_contact, ftcontact_next)
 
 persistent localSwingTimer;
 persistent swingTimerStartTimes;
@@ -51,9 +51,21 @@ if isempty(swingTimerStartTimes)
 end
 
 hips = get_hip_pos_world(x);
-if t < 0.3
-    disp(hips);
+% hips_relcom = get_hip_pos_world(x);
+% com = x(1:3);
+% hips = zeros(12, 1);
+% for ind = 1:4
+%     hips(ind*3 - 2:ind*3) = hips_relcom(ind*3 - 2:ind*3) + com;
+% end
+% display(hips);
+
+% getting foot positions (in world frame) with respect to com
+com = x(1:3);
+pf = zeros(12, 1);
+for ind = 1:4
+    pf(ind*3 - 2:ind*3) = pf_w(ind*3 - 2:ind*3) - com;
 end
+
 
 for ind = 1:4
     if curr_contact(ind) == 1 && ftcontact_next(ind) == 0
@@ -85,19 +97,23 @@ for i = 1:4
         kD = 20;
         curr_t = localSwingTimer(i);
         rrf(i*3-2:i*3) = Rot'*swing_cartesian_PD(kP, kD, pf(i*3-2:i*3), dpf(i*3-2:i*3), curr_t, T_stance, pf_start(i*3-2:i*3), pf_des(i*3-2:i*3));
-        %rotating rrf into body frame
-        
-        
+        %rotating rrf into body frame 
     end
 end
+
+% Troubleshooting: display desired foot positions in world frame, wrt world
+% origin
+pf_des_w = zeros(12, 1);
+for ind = 1:4
+    pf_des_w(ind*3 - 2:ind*3) = pf_des(ind*3 - 2:ind*3) + com;
+end
+% display(t);
+% display(pf_des_w);
 
 % output to rrfs, 12x1 vector of all the robot reaction forces in world
 % frame, needs to be rotated to body frame before being sent out of the
 % function, can do it here or can do it outside (probably outside after
 % adding it to the world frame MPC forces)
-
-
-
 end
 
 
@@ -106,6 +122,7 @@ function pf_des = foot_placement(p_hip, x, v_des, K_step, T_stance)
 
 v_com = [x(7); x(8); 0];
 pf_des = [p_hip(1); p_hip(2); 0] + (T_stance/2)*v_com + K_step*(v_com - v_des);
+%display(pf_des);
 
 end
 

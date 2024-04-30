@@ -12,7 +12,9 @@ bar_states = 13;
 Xmpc_elem = bar_states*N + legs*3*N;
 % Q, R values from HW4 #2(b)
 % Q = diag([40, 50, 60, 10, 10, 10, 4, 4, 4, 1, 1, 1, 0]);
-Q = diag([40, 50, 60, 30, 30, 10, 4, 4, 4, 1, 1, 1, 0]);
+
+Q = diag([40, 50, 150, 10, 10, 10, 4, 4, 4, 1, 1, 1, 0]);
+
 R = 0.0001*eye(legs*3);
 m = 12;
 F_max = 500;
@@ -20,28 +22,6 @@ F_min = 10;
 mu = 0.5;
 I_b = diag([0.0168, 0.0565, 0.064]);
 
-% Foot Contact
-% Would need to update for swing trajectory
-%{
-ftcontact_prev = params.ftcontact_prev;
-   ftcontact_next = gait(1:legs);
-   hip_vec = [params.vk, params.vg, params.vi, params.ve];
-   for ind = 1:legs
-       if ftcontact_prev(ind) == 0 && ftcontact_next(ind) == 1
-           r_temp = R*hip_vec(:, ind) + P;
-           switch ind
-               case 1
-                   params.p_f1 = [r_temp(1:2); 0];
-               case 2
-                   params.p_f2 = [r_temp(1:2); 0];
-               case 3
-                   params.p_f3 = [r_temp(1:2); 0];
-               case 4
-                   params.p_f4 = [r_temp(1:2); 0];
-           end
-       end
-   end
-%}
 % Cost function parameters
 vec_Q = diag(Q);
 temp_Qs = vec_Q(:, ones(N, 1));

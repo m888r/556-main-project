@@ -99,6 +99,6 @@ for ind = 0:legs-1
     rrf_body(ind*3 + 1: ind*3 + 3,1) = -1 * R'*grf_legs(ind*3 + 1: ind*3 + 3,1);
 end
 
-disp(rrf_body)
+%display(rrf_body);
 
 end

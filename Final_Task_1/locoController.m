@@ -2,11 +2,6 @@ function rrf = locoController(X, pf, dpf, t, q, dq)
 persistent last_mpc_run;
 persistent rrf_mpc;
 
-if t < 0.3
-    display(X);
-    display(pf);
-    display(dpf);
-end
 
 if isempty(rrf_mpc)
     rrf_mpc = zeros(12, 1);
@@ -18,13 +13,13 @@ end
 
 N = 10;
 mpc_dt = 0.03;
-gaitperiod = 0.09;
+gaitperiod = 0.12;
 legs = 4;
 rrf = zeros(12, 1);
 
 Xd = [0; 0; 0.2; zeros(3,1); zeros(3,1); zeros(3,1)];
 
-walking_Xd = [0; 0; 0.2; 0; 0; 0; zeros(3,1); zeros(3,1)];
+walking_Xd = [0.5; 0; 0.2; 0; 0; 0; 0.5; 0; 0; zeros(3,1)];
 
 gaitname = gaitScheduler(X, pf, t);
 
