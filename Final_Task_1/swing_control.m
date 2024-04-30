@@ -27,7 +27,7 @@
     
 %}
 
-function [rrf, pf_des_w] = swing_control(x, v_des, K_step, pf_w, dpf, t, T_stance, curr_contact, ftcontact_next)
+function [rrf, pf_des_w, hips] = swing_control(x, v_des, K_step, pf_w, dpf, t, T_stance, curr_contact, ftcontact_next)
 
 persistent localSwingTimer;
 persistent swingTimerStartTimes;
