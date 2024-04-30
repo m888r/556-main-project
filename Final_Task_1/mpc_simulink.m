@@ -11,9 +11,13 @@ bar_states = 13;
 % dt = 0.03;
 Xmpc_elem = bar_states*N + legs*3*N;
 % Q, R values from HW4 #2(b)
+Q = diag([40, 50, 60, 10, 10, 10, 4, 4, 4, 1, 1, 1, 0]);
+
+% test tuning for trotting in place
 % Q = diag([40, 50, 60, 10, 10, 10, 4, 4, 4, 1, 1, 1, 0]);
 
-Q = diag([40, 50, 150, 10, 10, 10, 4, 4, 4, 1, 1, 1, 0]);
+% test tuning for trotting forward
+Q = diag([40, 50, 60, 10, 10, 10, 4, 4, 4, 1, 1, 1, 0]);
 
 R = 0.0001*eye(legs*3);
 m = 12;

@@ -1,4 +1,4 @@
-function rrf = locoController(X, pf, dpf, t, q, dq)
+function [rrf, pf_des_w] = locoController(X, pf, dpf, t, q, dq)
 persistent last_mpc_run;
 persistent rrf_mpc;
 
@@ -19,7 +19,8 @@ rrf = zeros(12, 1);
 
 Xd = [0; 0; 0.2; zeros(3,1); zeros(3,1); zeros(3,1)];
 
-walking_Xd = [0.5; 0; 0.2; 0; 0; 0; 0.5; 0; 0; zeros(3,1)];
+walking_Xd = [0.2; 0; 0.2; 0; 0; 0; 0.2; 0; 0; zeros(3,1)];
+pf_des_w = zeros(12, 1);
 
 gaitname = gaitScheduler(X, pf, t);
 
@@ -48,8 +49,7 @@ if isequal(gaitname, "standing")
     % Else, run mpc
 else
     % If leg starts swing phase, run swing control for it
-    
-    rrf_swing = swing_control(X, walking_Xd(4:6), 0.1, pf, dpf, t, gaitperiod, currcontact, ftcontacts);
+    [rrf_swing, pf_des_w] = swing_control(X, walking_Xd(4:6), 0.5, pf, dpf, t, gaitperiod, currcontact, ftcontacts);
     
     if (t - last_mpc_run) >= mpc_dt
         rrf_mpc = mpc_simulink(X, walking_Xd, pf, t, N, mpc_dt, ftcontacts);

@@ -27,7 +27,7 @@
     
 %}
 
-function rrf = swing_control(x, v_des, K_step, pf_w, dpf, t, T_stance, curr_contact, ftcontact_next)
+function [rrf, pf_des_w] = swing_control(x, v_des, K_step, pf_w, dpf, t, T_stance, curr_contact, ftcontact_next)
 
 persistent localSwingTimer;
 persistent swingTimerStartTimes;
@@ -107,8 +107,6 @@ pf_des_w = zeros(12, 1);
 for ind = 1:4
     pf_des_w(ind*3 - 2:ind*3) = pf_des(ind*3 - 2:ind*3) + com;
 end
-% display(t);
-% display(pf_des_w);
 
 % output to rrfs, 12x1 vector of all the robot reaction forces in world
 % frame, needs to be rotated to body frame before being sent out of the
