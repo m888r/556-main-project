@@ -1,7 +1,8 @@
-function [rrf, pf_des_w, hips, pf_current_relbody, curr_pf_target] = locoController(X, pf, dpf, t, q, dq)
+function [rrf, rrf_world, pf_des_w, hips, pf_current_relbody, curr_pf_target] = locoController(X, pf, dpf, t, q, dq)
 persistent last_mpc_run;
 persistent rrf_mpc;
 
+rrf_world = zeros(12, 1);
 
 if isempty(rrf_mpc)
     rrf_mpc = zeros(12, 1);
@@ -16,6 +17,7 @@ mpc_dt = 0.03;
 gaitperiod = 0.12;
 legs = 4;
 rrf = zeros(12, 1);
+grf_mpc = zeros(12, 1);
 
 Xd = [0; 0; 0.25; zeros(3,1); zeros(3,1); zeros(3,1)];
 
@@ -55,11 +57,17 @@ else
     [rrf_swing, pf_des_w, hips, pf_current_relbody, curr_pf_target] = swing_control(X, walking_Xd(4:6), 0.5, pf, dpf, t, gaitperiod, currcontact, ftcontacts);
     
     if (t - last_mpc_run) >= mpc_dt
-        rrf_mpc = mpc_simulink(X, walking_Xd, pf, t, N, mpc_dt, ftcontacts);
+        [rrf_mpc, grf_mpc] = mpc_simulink(X, walking_Xd, pf, t, N, mpc_dt, ftcontacts);
         last_mpc_run = t;
     end
     
     % Add robot reaction forces from swing and mpc
     rrf = rrf_swing + rrf_mpc;
+    
 end
+
+for ind = 1:4
+    rrf_world(ind*3-2:ind*3) = eul2rotm(X(4:6)') * rrf(ind*3-2:ind*3);
+end
+
 end

@@ -1,4 +1,4 @@
-function rrf_legs = mpc_simulink(X, Xd, pf, t, N, dt, ftcontacts)
+function [rrf_legs, grf_legs] = mpc_simulink(X, Xd, pf, t, N, dt, ftcontacts)
 coder.extrinsic('quadprog');
 warningState = warning('off', 'all');
 P = X(1:3);
