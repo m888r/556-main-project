@@ -20,8 +20,8 @@ grav = [0; 0; -9.81];
 % Control Parameters
 Kp_pos = diag([30, 30, 400]);
 Kd_pos = diag([10, 10, 50]);
-Kp_ori = diag([2500, 700, 700]);
-Kd_ori = diag([150, 100, 50]);
+Kp_ori = diag([100, 100, 100]);
+Kd_ori = diag([30, 30, 30]);
 S_qp = diag([2, 2, 10, 1, 2, 1]);
 alpha = 0.01;
 
@@ -38,6 +38,13 @@ alpha = 0.01;
 % Kd_pos = diag([30, 30, 30]);
 % Kp_ori = diag([100, 500, 100]);
 % Kd_ori = diag([30, 30, 30]);
+% S_qp = diag([2, 2, 10, 1, 2, 1]);
+% alpha = 0.01;
+% before fixing the angular rate order
+% Kp_pos = diag([30, 30, 400]);
+% Kd_pos = diag([10, 10, 50]);
+% Kp_ori = diag([2500, 700, 700]);
+% Kd_ori = diag([150, 100, 50]);
 % S_qp = diag([2, 2, 10, 1, 2, 1]);
 % alpha = 0.01;
 
