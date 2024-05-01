@@ -16,14 +16,21 @@ grav = [0; 0; -9.81];
 % S_qp = diag([2, 2, 10, 1, 2, 1]);
 % alpha = 0.01;
 
-
 % Control Parameters
 Kp_pos = diag([30, 30, 400]);
 Kd_pos = diag([10, 10, 50]);
-Kp_ori = diag([100, 100, 100]);
-Kd_ori = diag([30, 30, 30]);
+Kp_ori = diag([1700, 350, 100]);
+Kd_ori = diag([60, 70, 20]);
 S_qp = diag([2, 2, 10, 1, 2, 1]);
 alpha = 0.01;
+
+% Control Parameters -- before (Yvonne)
+% Kp_pos = diag([30, 30, 400]);
+% Kd_pos = diag([10, 10, 50]);
+% Kp_ori = diag([100, 100, 100]);
+% Kd_ori = diag([30, 30, 30]);
+% S_qp = diag([2, 2, 10, 1, 2, 1]);
+% alpha = 0.01;
 
 
 % Control Parameters -- Junheng Advice
@@ -64,7 +71,8 @@ ddPd = Kp_pos*(Pd - P) + Kd_pos*(dPd - dP);
 
 ypr = X(4:6);
 R = eul2rotm(ypr');
-wb = X(10:12);
+%wb = X(10:12);
+wb = [X(12); X(11); X(10)];
 w = R*wb;
 dwd = Kp_ori*rotmat2vec3d(Rd*R')' + Kd_ori*(wd - w);
 I_w = R*I_b*R';

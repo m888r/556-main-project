@@ -1,9 +1,9 @@
 function gaitname = gaitScheduler(X, pf, t)
-if t < 0.65
+%if t < 0.65
     gaitname = "standing";
-else
-    gaitname = "trotting";
+%else
+    %gaitname = "trotting";
     
     
-end
+%end
 end
