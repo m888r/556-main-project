@@ -14,7 +14,7 @@ Xmpc_elem = bar_states*N + legs*3*N;
 % Q = diag([40, 50, 60, 10, 10, 10, 4, 4, 4, 1, 1, 1, 0]);
 
 % test tuning for trotting in place
-Q = diag([40, 50, 60, 10, 10, 50, 4, 4, 4, 1, 1, 1, 0]);
+Q = diag([40, 50, 60, 10, 10, 10, 4, 4, 4, 1, 1, 1, 0]);
 
 % test tuning for trotting forward
 % Q = diag([40, 50, 60, 10, 10, 10, 4, 4, 4, 1, 1, 1, 0]);
