@@ -14,9 +14,9 @@ gait_ref = [0;0;0;0];
 if isequal(gaitname, "standing")
     gait_ref = [1; 1; 1; 1];
 elseif isequal(gaitname, "trotting")
-    % gait_ref = [1; 0; 0; 1; 0; 1; 1; 0];
+    gait_ref = [1; 0; 0; 1; 0; 1; 1; 0];
     % gait_ref = [0; 1; 1; 0; 1; 0; 0; 1];
-    gait_ref = ones(8, 1);
+    % gait_ref = ones(8, 1);
 elseif isequal(gaitname, "bounding")
     gait_ref = [1; 1; 0; 0; 0; 0; 1; 1];
 end
