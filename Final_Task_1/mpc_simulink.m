@@ -14,12 +14,12 @@ Xmpc_elem = bar_states*N + legs*3*N;
 % Q = diag([40, 50, 60, 10, 10, 10, 4, 4, 4, 1, 1, 1, 0]);
 
 % test tuning for trotting in place
-Q = diag([40, 50, 60, 10, 10, 20, 4, 4, 4, 1, 1, 1, 0]);
+Q = diag([40, 50, 60, 10, 10, 10, 4, 4, 4, 1, 1, 1, 0]);
 
 % test tuning for trotting forward
 % Q = diag([40, 50, 60, 10, 10, 10, 4, 4, 4, 1, 1, 1, 0]);
 
-R = 0.0001*eye(legs*3);
+R = 0.000001*eye(legs*3);
 m = 12;
 F_max = 500;
 F_min = 10;
@@ -98,18 +98,8 @@ A_eq = [A_eq1, A_eq2];
 b_eq = zeros(Xmpc_elem - 3*legs*N, 1);
 b_eq(1:bar_states) = A_k*X_bar;
 
-%options = optimoptions('quadprog', 'Algorithm', 'active-set');
-%lb = [];
-%ub = [];
-% x0 = zeros(Xmpc_elem, 1);
-% for ind = 1:bar_states:bar_states*N
-%     x0(ind:ind + bar_states - 1, 1) = X_bar;
-% end
-%x0 = zeros(Xmpc_elem, 1);
-%x0(1:bar_states) = X_bar;
-%X_mpc = quadprog(H, f, A_iq, b_iq, A_eq, b_eq,lb,ub, x0,options);
+
 X_mpc = quadprog(H, f, A_iq, b_iq, A_eq, b_eq);
-% X_mpc = quadprog(H, f, [], [], A_eq, b_eq);
 grf_legs = X_mpc(N*bar_states + 1:N*bar_states + 3*legs, 1);
 rrf_legs = zeros(3*legs, 1);
 
