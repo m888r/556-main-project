@@ -5,7 +5,8 @@ p_com = x(1:3);
 % offset_x = 0.1805;
 % offset_y = 0.047;
 offset_y = 0.13;
-offset_x = 0.19;
+offset_x = 0.21;
+offset_x_backfeet = 0.15;
 
 % playing around with offset_y to account for hip motor thickness
 % offset_y = 0.13;
@@ -18,8 +19,8 @@ R = eul2rotm(x(4:6)');
 
 hip_FL = R * [offset_x; offset_y; offset_z];
 hip_FR = R * [offset_x; -offset_y; offset_z];
-hip_RL = R * [-offset_x; offset_y; offset_z];
-hip_RR = R * [-offset_x; -offset_y; offset_z];
+hip_RL = R * [-offset_x_backfeet; offset_y; offset_z];
+hip_RR = R * [-offset_x_backfeet; -offset_y; offset_z];
 
 % still relative to body position, just rotated into world frame
 

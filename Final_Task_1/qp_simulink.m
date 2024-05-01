@@ -1,4 +1,4 @@
-function rrf_body = qp_simulink(X, pf, t)
+function rrf_body = qp_simulink(X, pf, t, Xd)
 coder.extrinsic('quadprog');
 m = 12;
 F_max = 500;
@@ -43,12 +43,12 @@ alpha = 0.01;
 
 
 % Desired Conditions
-Pd = [0; 0; 0.2];
+Pd = Xd(1:3);
 % [Yaw, Pitch, Roll]
-euld = [0, 0, 0];
-Rd = eul2rotm(euld);
-dPd = [0; 0; 0];
-wd = [0; 0; 0];
+euld = Xd(4:6);
+Rd = eul2rotm(euld');
+dPd = Xd(7:9);
+wd = Xd(10:12);
 
 % PD Controller b_d
 P = X(1:3);

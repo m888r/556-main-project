@@ -27,7 +27,7 @@
     
 %}
 
-function [rrf, pf_des_relbody, hips, pf] = swing_control(x, v_des, K_step, pf_w, dpf, t, T_stance, curr_contact, ftcontact_next)
+function [rrf, pf_des_w, hips_rel_w, pf, curr_pf_target] = swing_control(x, v_des, K_step, pf_w, dpf, t, T_stance, curr_contact, ftcontact_next)
 
 persistent localSwingTimer;
 persistent swingTimerStartTimes;
@@ -89,13 +89,17 @@ end
 
 ypr = x(4:6);
 Rot = eul2rotm(ypr');
+rrf_unrotated = zeros(12, 1);
 rrf = zeros(12, 1);
+curr_pf_target = zeros(12, 1);
 for i = 1:4
     if ftcontact_next(i) == 0
-        kP = 100;
-        kD = 20;
+        kP = 4000;
+        kD = 10;
         curr_t = localSwingTimer(i);
-        rrf(i*3-2:i*3) = Rot'*swing_cartesian_PD(kP, kD, pf(i*3-2:i*3), dpf(i*3-2:i*3), curr_t, T_stance, pf_start(i*3-2:i*3), pf_des(i*3-2:i*3));
+        [rrf_unrotated(i*3-2:i*3), curr_pf_target(i*3-2:i*3)] = swing_cartesian_PD(kP, kD, pf(i*3-2:i*3), dpf(i*3-2:i*3), curr_t, T_stance, pf_start(i*3-2:i*3), pf_des(i*3-2:i*3), x);
+        curr_pf_target(i*3-2:i*3) = curr_pf_target(i*3-2:i*3) + com;
+        rrf(i*3-2:i*3) = Rot'*rrf_unrotated(i*3-2:i*3);
         %rotating rrf into body frame
     end
 end
@@ -112,7 +116,6 @@ end
 % function, can do it here or can do it outside (probably outside after
 % adding it to the world frame MPC forces)
 
-pf_des_relbody = pf_des;
 
 end
 
@@ -121,7 +124,7 @@ end
 function pf_des = foot_placement(p_hip, x, v_des, K_step, T_stance)
 
 v_com = [x(7); x(8); 0];
-pf_des = [p_hip(1); p_hip(2); 0]; %+ (T_stance/2)*v_com + K_step*(v_com - v_des);
+pf_des = [p_hip(1); p_hip(2); 0 - x(3)]; %+ (T_stance/2)*v_com + K_step*(v_com - v_des);
 %display(pf_des);
 
 end
@@ -134,10 +137,10 @@ end
     trajectory
 %}
 
-function rrf = swing_cartesian_PD(kP, kD, curr_pf, curr_dpf, curr_t, T_stance, pf_start, pf_des)
+function [rrf, curr_pf_target] = swing_cartesian_PD(kP, kD, curr_pf, curr_dpf, curr_t, T_stance, pf_start, pf_des, x)
 
 % calculate the target position and end effector velocity
-[curr_pf_target, curr_dpf_target] = swing_trajectory(curr_t, T_stance, pf_start, pf_des);
+[curr_pf_target, curr_dpf_target] = swing_trajectory(curr_t, T_stance, pf_start, pf_des, x);
 
 rrf = kP*(curr_pf_target - curr_pf) + kD*(curr_dpf_target - curr_dpf);
 
@@ -150,17 +153,19 @@ end
     pf_start = foot position when switching from stance to swing
     pf_des = foot position at end of trajectory [x, y, z]
 %}
-function [curr_pf_target, curr_dpf_target] = swing_trajectory(curr_t, T_stance, pf_start, pf_des)
+function [curr_pf_target, curr_dpf_target] = swing_trajectory(curr_t, T_stance, pf_start, pf_des, x)
 % implement a linearly interpolated trajectory from pf_start to pf_des
 t = curr_t / T_stance;
-P_height = 0.1; % height control point is at z=0.1
+P_height = 0.06; % height control point is at z=0.05
 P0 = pf_start;
-P1 = [(pf_des(1) - pf_start(1)) / 2; (pf_des(2) - pf_start(2)) / 2; P_height];
+P1 = [(pf_des(1) - pf_start(1)) / 2; (pf_des(2) - pf_start(2)) / 2; P_height - x(3)];
 P2 = pf_des;
 
 
 
 % 2nd order bezier: (1-t)^2 * P0 * 2 + 2*(1-t)*t*P1 + t^2*P2
-curr_pf_target = P0.*(1-t)^2 + 2.*t.*P1.*(1-t) + P2.*(t^2);
+curr_pf_target = (P2-P0)*t + P0; 
+curr_pf_target(3) = P0(3)*(1-t)^2 + 2*t*P1(3)*(1-t) + P2(3)*(t^2);
+% curr_pf_target = P0.*(1-t)^2 + 2.*t.*P1.*(1-t) + P2.*(t^2);
 curr_dpf_target = [0; 0; 0];
 end
