@@ -21,7 +21,7 @@ grf_mpc = zeros(12, 1);
 
 Xd = [0; 0; 0.25; zeros(3,1); zeros(3,1); zeros(3,1)];
 
-velTarget = speed_ramp(t, 0.65, 3, 0, 1.7);
+velTarget = speed_ramp(t, 0.65, 2, 0, 1.7);
 walking_Xd = [0; 0; 0.25; 0; 0; 0; velTarget; 0; 0; zeros(3,1)];
 pf_des_w = zeros(12, 1);
 hips = zeros(12, 1);
