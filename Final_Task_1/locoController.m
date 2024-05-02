@@ -58,6 +58,7 @@ else
     
     if (t - last_mpc_run) >= mpc_dt
         [rrf_mpc, grf_mpc] = mpc_simulink(X, walking_Xd, pf, t, N, mpc_dt, ftcontacts);
+        % [rrf_mpc, grf_mpc] = mpc_mohsen_allocate(X, walking_Xd, pf, t, N, mpc_dt, ftcontacts);
         last_mpc_run = t;
     end
     

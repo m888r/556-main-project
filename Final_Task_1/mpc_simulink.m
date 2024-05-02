@@ -11,7 +11,7 @@ bar_states = 13;
 % dt = 0.03;
 Xmpc_elem = bar_states*N + legs*3*N;
 % Q, R values from HW4 #2(b)
- Q = diag([40, 50, 60, 10, 10, 10, 4, 4, 4, 1, 1, 1, 0]);
+ Q = diag([40, 50, 60, 10, 10, 10, 4, 4, 4, 1, 1, 0, 0]);
 
 % test tuning for trotting in place
 %Q = diag([10, 10, 10, 30, 30, 30, 4, 4, 4, 1, 1, 1, 0]);
@@ -33,10 +33,9 @@ vec_R = diag(R);
 temp_Rs = vec_R(:, ones(N, 1));
 temp_fQ = -Q'*X_bard;
 temp_fQs = temp_fQ(:, ones(N, 1));
-
 H = diag([temp_Qs(:); temp_Rs(:)]);
-f = [temp_fQs(:); zeros(3*legs*N, 1)];
 
+f = [temp_fQs(:); zeros(3*legs*N, 1)];
 % Inequality constraints A_iq
 Fiq_mat = [-1, 0, -mu; 1, 0, -mu; 0, -1, -mu; 0, 1, -mu; 0, 0, 1; 0, 0, -1];
 A_iq = [zeros(6*legs*N, bar_states*N), kron(eye(legs*N),Fiq_mat)];
@@ -113,8 +112,11 @@ rrf_legs = zeros(3*legs, 1);
 ypr = X(4:6);
 Rot = eul2rotm(ypr');
 
-
+grf_legs_fixed = zeros(12, 1);
 for ind = 0:legs-1
+    % grf_legs_fixed(ind*3 + 1, 1) = grf_legs(ind*3+1, 1);
+    % grf_legs_fixed(ind*3 + 2, 1) = grf_legs(ind*3+2, 1) * -1;
+    % grf_legs_fixed(ind*3 + 3, 1) = grf_legs(ind*3+3, 1);
     rrf_legs(ind*3 + 1: ind*3 + 3,1) = -1 * Rot'*grf_legs(ind*3 + 1: ind*3 + 3,1);
 end
 
