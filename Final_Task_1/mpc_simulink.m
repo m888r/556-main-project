@@ -1,4 +1,4 @@
-function [rrf_legs, grf_legs] = mpc_simulink(X, Xd, pf, t, N, dt, Q, ftcontacts)
+function [rrf_legs, grf_legs] = mpc_simulink(X, Xd, pf, t, N, dt, Q, R_f, ftcontacts)
 coder.extrinsic('quadprog');
 warningState = warning('off', 'all');
 P = X(1:3);
@@ -19,7 +19,7 @@ Q = diag([Q(1:3), Q(6), Q(5), Q(4), Q(7:9), Q(12), Q(11), Q(10), Q(13)]);
 % test tuning for trotting forward
 % Q = diag([40, 50, 60, 10, 10, 10, 4, 4, 4, 1, 1, 1, 0]);
 
-R = 0.00001*eye(legs*3);
+R = R_f*eye(legs*3);
 m = 12;
 F_max = 500;
 F_min = 10;
@@ -34,10 +34,10 @@ temp_Rs = vec_R(:, ones(N, 1));
 H = diag([temp_Qs(:); temp_Rs(:)]);
 %
 X_ref = referenceTrajectory(X_bard, X_bar, N, dt);
-ref_x = X_ref(1);
-com_x = X(1);
-display(ref_x);
-display(com_x);
+% ref_x = X_ref(4);
+% com_x = X(4);
+% display(ref_x);
+% display(com_x);
 Q_Tvec = diag(Q');
 temp_QTs = Q_Tvec(:, ones(N, 1));
 temp_fQs = -diag(temp_QTs(:))*X_ref;
