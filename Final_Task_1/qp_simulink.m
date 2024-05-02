@@ -105,8 +105,8 @@ A = [A_eye; temp_mat];
 H = A'*S_qp*A + alpha*eye(legs*3);
 f = -A'*S_qp*bd_pd;
 
-
-grf_legs = quadprog(H, f, A_iq, b_iq);
+options =  optimset('Display','off');
+grf_legs = quadprog(H, f, A_iq, b_iq, [], [], [], [], [], options);
 
 rrf_body = zeros(3*legs, 1);
 

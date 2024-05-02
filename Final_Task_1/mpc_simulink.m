@@ -104,8 +104,9 @@ A_eq = [A_eq1, A_eq2];
 b_eq = zeros(Xmpc_elem - 3*legs*N, 1);
 b_eq(1:bar_states) = A_k*X_bar;
 
+options =  optimset('Display','off');
 
-X_mpc = quadprog(H, f, A_iq, b_iq, A_eq, b_eq);
+X_mpc = quadprog(H, f, A_iq, b_iq, A_eq, b_eq, [], [], [], options);
 grf_legs = X_mpc(N*bar_states + 1:N*bar_states + 3*legs, 1);
 rrf_legs = zeros(3*legs, 1);
 

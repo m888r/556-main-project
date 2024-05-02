@@ -21,7 +21,8 @@ grf_mpc = zeros(12, 1);
 
 Xd = [0; 0; 0.25; zeros(3,1); zeros(3,1); zeros(3,1)];
 
-walking_Xd = [0; 0; 0.25; 0; 0; 0; 1; 0; 0; zeros(3,1)];
+velTarget = speed_ramp(t, 0.65, 3, 0, 1.7);
+walking_Xd = [0; 0; 0.25; 0; 0; 0; velTarget; 0; 0; zeros(3,1)];
 pf_des_w = zeros(12, 1);
 hips = zeros(12, 1);
 pf_current_relbody = zeros(12, 1);
@@ -29,7 +30,7 @@ curr_pf_target = zeros(12, 1);
 
 gaitname = gaitScheduler(X, pf, t);
 
-walking_x_Q = [0, 30, 30, 30, 150, 150, 4, 4, 4, 1, 1, 1, 0];
+walking_x_Q = [0, 30, 30, 30, 300, 150, 4, 4, 4, 1, 1, 1, 0];
 walking_x_Kstep = 0.1;
 
 [currcontact, ftcontacts] = project_gait(t,N,mpc_dt, gaitperiod, gaitname);

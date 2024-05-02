@@ -124,10 +124,18 @@ end
 function pf_des = foot_placement(p_hip, x, v_des, K_step, T_stance)
 
 v_com = [x(7); x(8); 0];
-pf_des = [p_hip(1); p_hip(2); 0 - x(3)] + (T_stance/2)*v_com + K_step*(v_com - v_des);
+pf_des = [p_hip(1); p_hip(2); 0 - x(3)] + (T_stance/2)*v_com + K_step*(v_des - v_com);
 %display(pf_des);
 
 end
+
+% should generalize by just using the hip speed
+% function pf_des = foot_placement_turning(p_hip, v_hip, x, K_step, T_stance)
+%     v_com = [x(7); x(8); 0];
+%     angvel_com = [x(10); x(11); x(12)]; % yaw pitch roll
+%     pf_des(1) = [p_hip(1); p_hip(2); 0 - x(3)] + (T_stance/2)*v_com + K_step*(dyaw_des - x(10));
+
+% end
 
 %{
     Do swing control for a single leg
@@ -156,7 +164,7 @@ end
 function [curr_pf_target, curr_dpf_target] = swing_trajectory(curr_t, T_stance, pf_start, pf_des, x)
 % implement a linearly interpolated trajectory from pf_start to pf_des
 t = curr_t / T_stance;
-P_height = 0.06; % height control point is at z=0.05
+P_height = 0.1; % height control point is at z=0.05
 P0 = pf_start;
 P1 = [(pf_des(1) - pf_start(1)) / 2; (pf_des(2) - pf_start(2)) / 2; P_height - x(3)];
 P2 = pf_des;
