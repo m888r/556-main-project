@@ -19,10 +19,17 @@ legs = 4;
 rrf = zeros(12, 1);
 grf_mpc = zeros(12, 1);
 
-Xd = [0; 0; 0.25; zeros(3,1); zeros(3,1); zeros(3,1)];
+standing_Xd = [0; 0; 0.25; zeros(3,1); zeros(3,1); zeros(3,1)];
 
-velTarget = speed_ramp(t, 0.65, 2, 0, 1.7);
-walking_Xd = [0; 0; 0.25; 0; 0; 0; velTarget; 0; 0; zeros(3,1)];
+velTarget = speed_ramp(t, 0.65, 2, 0, 0.5);
+zStart = 0.25;
+xCurr = X(3);
+if xCurr < 0.5
+    zTarget = zStart;
+else
+    zTarget = zStart + (xCurr-0.6)*0.1/0.2;
+end
+walking_Xd = [0; 0; zTarget; 0; 0; 0; velTarget; 0; 0; zeros(3,1)];
 pf_des_w = zeros(12, 1);
 hips = zeros(12, 1);
 pf_current_relbody = zeros(12, 1);
@@ -54,7 +61,7 @@ if isequal(gaitname, "standing")
     % rrf = [Fbody_front;Fbody_front;Fbody_back;Fbody_back];
     
     % QP
-    rrf = qp_simulink(X, pf, t, Xd);
+    rrf = qp_simulink(X, pf, t, standing_Xd);
     % Else, run mpc
 else
 
@@ -62,7 +69,7 @@ else
     Kstep = walking_x_Kstep;
 
     % If leg starts swing phase, run swing control for it
-    [rrf_swing, pf_des_w, hips, pf_current_relbody, curr_pf_target] = swing_control(X, walking_Xd(7:9), Kstep, pf, dpf, t, gaitperiod, currcontact, ftcontacts);
+    [rrf_swing, pf_des_w, hips, pf_current_relbody, curr_pf_target] = swing_control_stairs(X, walking_Xd(7:9), Kstep, pf, dpf, t, gaitperiod, currcontact, ftcontacts);
 
 
     if (t - last_mpc_run) >= mpc_dt
