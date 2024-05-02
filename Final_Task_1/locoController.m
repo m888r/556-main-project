@@ -28,7 +28,7 @@ curr_pf_target = zeros(12, 1);
 
 gaitname = gaitScheduler(X, pf, t);
 
-walking_x_Q = [30, 30, 30, 30, 300, 150, 4, 4, 4, 1, 30, 1, 0];
+walking_x_Q = [10, 10, 30, 30, 600, 150, 4, 4, 4, 1, 1, 1, 0];
 walking_x_Kstep = 0.1;
 
 [currcontact, ftcontacts] = project_gait(t,N,mpc_dt, gaitperiod, gaitname);
@@ -59,8 +59,8 @@ else
     Q_current = walking_x_Q;
     Kstep = walking_x_Kstep;
     
-    velTarget = speed_ramp(t, 0.65, 2, 0, 0.5);
-    walking_Xd = [X(1); 0; 0.25; 0; 0; 0; velTarget; 0; 0; zeros(3,1)];
+    velTarget = speed_ramp(t, 0.65, 2, 0, 1.7);
+    walking_Xd = [X(1); X(2); 0.25; X(4); 0; 0; 0; 0; 0; 0.5; 0; 0];
     
     % If leg starts swing phase, run swing control for it
     [rrf_swing, pf_des_w, hips, pf_current_relbody, curr_pf_target] = swing_control(X, walking_Xd(7:9), Kstep, pf, dpf, t, gaitperiod, currcontact, ftcontacts);

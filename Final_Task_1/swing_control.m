@@ -124,6 +124,7 @@ end
 function pf_des = foot_placement(p_hip, x, v_des, K_step, T_stance)
 
 v_com = [x(7); x(8); 0];
+% might want to flip v_des - v_com if you want to catch the robot due to disturbances
 pf_des = [p_hip(1); p_hip(2); 0 - x(3)] + (T_stance/2)*v_com + K_step*(v_des - v_com);
 %display(pf_des);
 
@@ -172,7 +173,7 @@ P2 = pf_des;
 
 
 % 2nd order bezier: (1-t)^2 * P0 * 2 + 2*(1-t)*t*P1 + t^2*P2
-curr_pf_target = (P2-P0)*t + P0; 
+curr_pf_target = (P2-P0)*t + P0;
 curr_pf_target(3) = P0(3)*(1-t)^2 + 2*t*P1(3)*(1-t) + P2(3)*(t^2);
 % curr_pf_target = P0.*(1-t)^2 + 2.*t.*P1.*(1-t) + P2.*(t^2);
 curr_dpf_target = [0; 0; 0];
