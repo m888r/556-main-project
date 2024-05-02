@@ -31,11 +31,17 @@ vec_Q = diag(Q);
 temp_Qs = vec_Q(:, ones(N, 1));
 vec_R = diag(R);
 temp_Rs = vec_R(:, ones(N, 1));
-temp_fQ = -Q'*X_bard;
-temp_fQs = temp_fQ(:, ones(N, 1));
 H = diag([temp_Qs(:); temp_Rs(:)]);
 
+X_ref = referenceTrajectory(X_bard, X_bar, N, dt);
+display(X_ref);
+Q_Tvec = diag(Q');
+temp_QTs = Q_Tvec(:, ones(N, 1));
+temp_fQs = -diag(temp_QTs(:))*X_ref;
+%temp_fQ = -Q'*X_bard;
+%temp_fQs = temp_fQ(:, ones(N, 1));
 f = [temp_fQs(:); zeros(3*legs*N, 1)];
+
 % Inequality constraints A_iq
 Fiq_mat = [-1, 0, -mu; 1, 0, -mu; 0, -1, -mu; 0, 1, -mu; 0, 0, 1; 0, 0, -1];
 A_iq = [zeros(6*legs*N, bar_states*N), kron(eye(legs*N),Fiq_mat)];

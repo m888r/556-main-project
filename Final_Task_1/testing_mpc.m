@@ -21,8 +21,11 @@ dt = 0.03;
 [currcontact, ftcontacts] = project_gait(t,N,dt, gaitperiod, gaitname);
 
 mpc_t = 0.67;
-mpc_rrf = mpc_simulink(X, Xd, pf, mpc_t, N,dt, ftcontacts);
+Q = [0, 30, 30, 30, 300, 150, 4, 4, 4, 1, 1, 1, 0];
+mpc_rrf = mpc_simulink(X, Xd, pf, mpc_t, N,dt, Q, ftcontacts)
+
+
 mpc_mohsen = mpc_mohsen(X, Xd, pf, mpc_t, N, dt, ftcontacts);
 mpc_mohsen_all = mpc_mohsen_allocate(X, Xd, pf, mpc_t, N, dt, ftcontacts);
-isequal(mpc_rrf, mpc_mohsen)
-isequal(mpc_mohsen_all, mpc_mohsen)
+isequal(mpc_rrf, mpc_mohsen);
+isequal(mpc_mohsen_all, mpc_mohsen);
