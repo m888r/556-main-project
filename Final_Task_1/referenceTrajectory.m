@@ -13,9 +13,9 @@ function [X_traj] = referenceTrajectory(Xd, X, N, dt)
 
     for i = 1:N
         vel_new = Xd(7:9);
-        pos_new = X(1:3) + (vel_new * dt * i);
+        pos_new = Xd(1:3) + (vel_new * dt * i);
         angvel_new = Xd(10:12);
-        ang_new = X(4:6) + (angvel_new * dt * i);
+        ang_new = Xd(4:6) + (angvel_new * dt * i);
         X_traj((i-1)*Xd_len+1:i*Xd_len) = [pos_new; ang_new; vel_new; angvel_new; 9.81];
     end
 
