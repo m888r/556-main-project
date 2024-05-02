@@ -21,13 +21,16 @@ grf_mpc = zeros(12, 1);
 
 Xd = [0; 0; 0.25; zeros(3,1); zeros(3,1); zeros(3,1)];
 
-walking_Xd = [0; 0; 0.25; 0; 0; 0; 0; 0; 0; zeros(3,1)];
+walking_Xd = [0; 0; 0.25; 0; 0; 0; 1; 0; 0; zeros(3,1)];
 pf_des_w = zeros(12, 1);
 hips = zeros(12, 1);
 pf_current_relbody = zeros(12, 1);
 curr_pf_target = zeros(12, 1);
 
 gaitname = gaitScheduler(X, pf, t);
+
+walking_x_Q = [0, 30, 30, 30, 150, 150, 4, 4, 4, 1, 1, 1, 0];
+walking_x_Kstep = 0.1;
 
 [currcontact, ftcontacts] = project_gait(t,N,mpc_dt, gaitperiod, gaitname);
 % If current and future contacts are all 1, do standing PD
@@ -53,11 +56,16 @@ if isequal(gaitname, "standing")
     rrf = qp_simulink(X, pf, t, Xd);
     % Else, run mpc
 else
+
+    Q_current = walking_x_Q;
+    Kstep = walking_x_Kstep;
+
     % If leg starts swing phase, run swing control for it
-    [rrf_swing, pf_des_w, hips, pf_current_relbody, curr_pf_target] = swing_control(X, walking_Xd(4:6), 0.5, pf, dpf, t, gaitperiod, currcontact, ftcontacts);
-    
+    [rrf_swing, pf_des_w, hips, pf_current_relbody, curr_pf_target] = swing_control(X, walking_Xd(7:9), Kstep, pf, dpf, t, gaitperiod, currcontact, ftcontacts);
+
+
     if (t - last_mpc_run) >= mpc_dt
-        [rrf_mpc, grf_mpc] = mpc_simulink(X, walking_Xd, pf, t, N, mpc_dt, ftcontacts);
+        [rrf_mpc, grf_mpc] = mpc_simulink(X, walking_Xd, pf, t, N, mpc_dt, Q_current, ftcontacts);
         % [rrf_mpc, grf_mpc] = mpc_mohsen_allocate(X, walking_Xd, pf, t, N, mpc_dt, ftcontacts);
         last_mpc_run = t;
     end

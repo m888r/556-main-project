@@ -124,7 +124,7 @@ end
 function pf_des = foot_placement(p_hip, x, v_des, K_step, T_stance)
 
 v_com = [x(7); x(8); 0];
-pf_des = [p_hip(1); p_hip(2); 0 - x(3)];% + (T_stance/2)*v_com + K_step*(v_com - v_des);
+pf_des = [p_hip(1); p_hip(2); 0 - x(3)] + (T_stance/2)*v_com + K_step*(v_com - v_des);
 %display(pf_des);
 
 end

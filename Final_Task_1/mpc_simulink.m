@@ -1,17 +1,17 @@
-function [rrf_legs, grf_legs] = mpc_simulink(X, Xd, pf, t, N, dt, ftcontacts)
+function [rrf_legs, grf_legs] = mpc_simulink(X, Xd, pf, t, N, dt, Q, ftcontacts)
 coder.extrinsic('quadprog');
 warningState = warning('off', 'all');
 P = X(1:3);
 ypr = X(4:6);
-X_bard = [Xd; 9.81];
-X_bar = [X; 9.81];
+X_bard = [Xd(1:3); Xd(6); Xd(5); Xd(4); Xd(7:9); Xd(12); Xd(11); Xd(10); 9.81];
+X_bar = [X(1:3); X(6); X(5); X(4); X(7:9); X(12); X(11); X(10); 9.81];
 legs = 4;
 bar_states = 13;
 % N = 10;
 % dt = 0.03;
 Xmpc_elem = bar_states*N + legs*3*N;
 % Q, R values from HW4 #2(b)
- Q = diag([40, 50, 60, 10, 10, 10, 4, 4, 4, 1, 1, 0, 0]);
+Q = diag([Q(1:3), Q(6), Q(5), Q(4), Q(7:9), Q(12), Q(11), Q(10), 9.81]);
 
 % test tuning for trotting in place
 %Q = diag([10, 10, 10, 30, 30, 30, 4, 4, 4, 1, 1, 1, 0]);
