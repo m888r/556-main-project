@@ -27,7 +27,7 @@
     
 %}
 
-function [rrf, pf_des_w, hips_rel_w, pf, curr_pf_target] = swing_control_stairs(x, v_des, K_step, pf_w, dpf, t, T_stance, curr_contact, ftcontact_next)
+function [rrf, pf_des_w, hips, pf, curr_pf_target] = swing_control_stairs(x, v_des, K_step, pf_w, dpf, t, T_stance, curr_contact, ftcontact_next,stairStart)
 
 persistent localSwingTimer;
 persistent swingTimerStartTimes;
@@ -70,7 +70,7 @@ for ind = 1:4
     if curr_contact(ind) == 1 && ftcontact_next(ind) == 0
         swingTimerStartTimes(ind) = t;
         pf_start(ind*3 - 2:ind*3) = pf(ind*3 - 2:ind*3);
-        pf_des(ind*3 - 2:ind*3) = foot_placement(hips(ind*3 - 2:ind*3), x, v_des, K_step, T_stance);
+        pf_des(ind*3 - 2:ind*3) = foot_placement(hips(ind*3 - 2:ind*3), x, v_des, K_step, T_stance,stairStart);
     end
     localSwingTimer(ind) = t - swingTimerStartTimes(ind);
 end
@@ -94,8 +94,12 @@ rrf = zeros(12, 1);
 curr_pf_target = zeros(12, 1);
 for i = 1:4
     if ftcontact_next(i) == 0
-        kP = 3500;
-        kD = 10;
+        % kP = 3000;
+        % kD = 10;
+        
+        kP = 5000; %work
+        kD = 20;
+        
         curr_t = localSwingTimer(i);
         [rrf_unrotated(i*3-2:i*3), curr_pf_target(i*3-2:i*3)] = swing_cartesian_PD(kP, kD, pf(i*3-2:i*3), dpf(i*3-2:i*3), curr_t, T_stance, pf_start(i*3-2:i*3), pf_des(i*3-2:i*3), x);
         curr_pf_target(i*3-2:i*3) = curr_pf_target(i*3-2:i*3) + com;
@@ -116,20 +120,62 @@ end
 % function, can do it here or can do it outside (probably outside after
 % adding it to the world frame MPC forces)
 
-
 end
 
 
 % change this for stairs, and change it for turning
-function pf_des = foot_placement(p_hip, x, v_des, K_step, T_stance)
+function pf_des = foot_placement(p_hip, x, v_des, K_step, T_stance,stairStart)
 
 v_com = [x(7); x(8); 0];
 pf_des = [p_hip(1); p_hip(2); 0 - x(3)] + (T_stance/2)*v_com + K_step*(v_des - v_com);
 %display(pf_des);
-if (pf_des(1) > 0.5 && pf_des(1) <= 0.7)
-    pf_des = [0.6;p_hip(2);0.1];
-elseif (pf_des(1) > 0.7 && pf_des(1) <= 0.9)
-    pf_des = [0.8;p_hip(2);0.2];
+
+% get desired foot positions in world frame, wrt world origin
+com = x(1:3);
+pf_des_w = pf_des + com;
+
+stairWidth = 0.2; % width of stairs from the side (so in x direction)
+stairHeight = 0.1;
+amountDeadband = 0.3; %ratio of stairWidth that shall not get foot placed on
+%  (on each side, aka beginning of stairWidth and end)
+
+%find stair bounds to avoid edge or corner
+stairBoundsX = []; % 5x2 matrix of most extreme allowed X positions at each step
+for step = 0:4
+    bound1 = stairStart + step*stairWidth + amountDeadband*stairWidth;
+    bound2 = stairStart + (step+1)*stairWidth - amountDeadband*stairWidth;
+    stairBoundsX = [stairBoundsX; [bound1, bound2]];
+end
+
+%determine stair foot is going to
+stair = -1;
+if pf_des_w(1) <= stairStart && pf_des_w(1) > stairStart-0.1 %stair 0 represents being close to base of staircase
+    stair = 0;
+elseif pf_des_w(1) > stairStart && pf_des_w(1) <= stairStart+stairWidth
+    stair = 1;
+elseif pf_des_w(1) > stairStart+stairWidth && pf_des_w(1) <= stairStart+stairWidth*2
+    stair = 2;
+elseif pf_des_w(1) > stairStart+stairWidth*2 && pf_des_w(1) <= stairStart+stairWidth*3
+    stair = 3;
+elseif pf_des_w(1) > stairStart+stairWidth*3 && pf_des_w(1) <= stairStart+stairWidth*4
+    stair = 4;
+elseif pf_des_w(1) > stairStart+stairWidth*4
+    stair = 5;
+end
+
+%determine desired foot position based on stair
+if stair==0 % stair 0 represents being close to base of staircase
+    pf_des(1) = stairStart-0.1 - com(1) - (T_stance)*v_com(3);
+elseif ismember(stair,[1,2,3,4])
+    if pf_des_w(1) < stairBoundsX(stair,1)
+        pf_des(1) = stairBoundsX(stair,1) - com(1);
+    elseif pf_des_w(1) > stairBoundsX(stair,2)
+        pf_des(1) = stairBoundsX(stair,2) - com(1) - (T_stance)*v_com(1);
+    end
+    pf_des(3) = stairHeight*stair - com(3) - (T_stance)*v_com(3);
+    com(3);
+elseif stair==5
+    pf_des(3) = 0.5 - com(3) - (T_stance)*v_com(3);
 end
 
 end
@@ -168,17 +214,24 @@ end
 %}
 function [curr_pf_target, curr_dpf_target] = swing_trajectory(curr_t, T_stance, pf_start, pf_des, x)
 % implement a linearly interpolated trajectory from pf_start to pf_des
-t = curr_t / T_stance;
-P_height = 0.15; % height control point is at z=0.05
+t = curr_t / (T_stance-0.03); %subtract 0.03 because for some reason trajectory target gets started late
+P_height = 0.15; % height control point
+
 P0 = pf_start;
-P1 = [(pf_des(1) - pf_start(1)) / 2; (pf_des(2) - pf_start(2)) / 2; P_height - x(3)];
-P2 = pf_des;
+P1 = [pf_start(1); pf_start(2); pf_start(3) + P_height];
+P2 = [pf_des(1); pf_des(2); pf_start(3) + P_height];
+P3 = pf_des;
 
-
-
-% 2nd order bezier: (1-t)^2 * P0 * 2 + 2*(1-t)*t*P1 + t^2*P2
-curr_pf_target = (P2-P0)*t + P0; 
-curr_pf_target(3) = P0(3)*(1-t)^2 + 2*t*P1(3)*(1-t) + P2(3)*(t^2);
-% curr_pf_target = P0.*(1-t)^2 + 2.*t.*P1.*(1-t) + P2.*(t^2);
+% % 3rd Order Bezier
+curr_pf_target = (1-t)^3 * P0 + 3*(1-t)^2*t*P1 + 3*(1-t)*t^2*P2 + P3*t^3;
 curr_dpf_target = [0; 0; 0];
+
+%experimenting with triangle path
+% t_up = 0.5;
+% if t < t_up
+%     curr_pf_target = (P1-P0)*t/t_up + P0;
+% else
+%     curr_pf_target = (P3-P1)*(t-t_up)/(1-t_up) + P1;
+% end
+
 end

@@ -4,6 +4,7 @@ persistent t_gaitchange
 
 if isempty(currgait)
     currgait = "standing";
+    % currgait = "single";
 end
 
 if isempty(t_gaitchange)
@@ -19,8 +20,17 @@ elseif isequal(gaitname, "trotting")
     %  gait_ref = ones(8, 1);
 elseif isequal(gaitname, "bounding")
     gait_ref = [1; 1; 0; 0; 0; 0; 1; 1];
-elseif isequal(gaitname, "flying trot")
-    gait_ref = [1; 1; 0; 0; 0; 0; 0; 0 0; 0; 1; 1];
+elseif isequal(gaitname, "singleFt")
+    gait_ref = [1; 0; 0; 0; 
+                0; 0; 0; 1; 
+                0; 1; 0; 0;
+                0; 0; 1; 0];
+    gait_ref = [0; 1; 1; 1; 
+                1; 1; 1; 0; 
+                1; 0; 1; 1;
+                1; 1; 0; 1];
+% elseif isequal(gaitname, "flying trot")
+%     gait_ref = [1; 1; 0; 0; 0; 0; 0; 0 0; 0; 1; 1];
 end
 gait_states = length(gait_ref)/4;
 
