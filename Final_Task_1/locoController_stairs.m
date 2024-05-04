@@ -44,7 +44,7 @@ hips = zeros(12, 1);
 pf_current_relbody = zeros(12, 1);
 curr_pf_target = zeros(12, 1);
 
-gaitname = gaitScheduler(X, pf, t);
+gaitname = gaitScheduler_stairs(X, pf, t);
 
 walking_x_Q = [0, 30, 30, 30, 300, 150, 4, 4, 4, 1, 1, 1, 0];
 walking_x_Kstep = 0.3; %0.1;

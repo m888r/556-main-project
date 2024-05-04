@@ -1,4 +1,4 @@
-function [rrf, rrf_world, pf_des_w, hips, pf_current_relbody, curr_pf_target] = locoController(X, pf, dpf, t, q, dq)
+function [rrf, rrf_world, pf_des_w, hips, pf_current_relbody, curr_pf_target] = locoController_obstacle(X, pf, dpf, t, q, dq)
 persistent last_mpc_run;
 persistent rrf_mpc;
 
@@ -21,14 +21,35 @@ grf_mpc = zeros(12, 1);
 
 Xd = [0; 0; 0.25; zeros(3,1); zeros(3,1); zeros(3,1)];
 
-velTarget = speed_ramp(t, 0.65, 2, 0, 1.7);
-walking_Xd = [0; 0; 0.25; 0; 0; 0; velTarget; 0; 0; zeros(3,1)];
+velTarget = speed_ramp(t, 0.65, 2, 0, 0.2);
+
+% Get zTarget and pitchTarget
+obs1Start = 1; %where base of obs1 starts wrt world origin
+zStart = 0.28;
+xCurr = X(1);
+
+pitchTarget = 0;
+if xCurr < obs1Start-0.4
+    zTarget = zStart;
+elseif xCurr > obs1Start-0.4 && xCurr < obs1Start+0.1
+    zTarget = zStart + 0.07;
+    pitchTarget = -pi/8;
+elseif xCurr > obs1Start+0.1 && xCurr < obs1Start+0.8
+    zTarget = zStart + 0.15;
+    pitchTarget = 0;
+    velTarget = 0.1;
+else
+    zTarget = zStart; %add total staircase height
+    % pitchTarget = 0;
+end
+
+walking_Xd = [0; 0; zTarget; 0; pitchTarget; 0; velTarget; 0; 0; zeros(3,1)];
 pf_des_w = zeros(12, 1);
 hips = zeros(12, 1);
 pf_current_relbody = zeros(12, 1);
 curr_pf_target = zeros(12, 1);
 
-gaitname = gaitScheduler(X, pf, t);
+gaitname = gaitScheduler_obstacle(X, pf, t);
 
 walking_x_Q = [0, 30, 30, 30, 300, 150, 4, 4, 4, 1, 1, 1, 0];
 walking_x_Kstep = 0.1;
@@ -57,16 +78,17 @@ if isequal(gaitname, "standing")
     rrf = qp_simulink(X, pf, t, Xd);
     % Else, run mpc
 else
-
+    
     Q_current = walking_x_Q;
+    R_f = 0.00005;
     Kstep = walking_x_Kstep;
-
+    
     % If leg starts swing phase, run swing control for it
-    [rrf_swing, pf_des_w, hips, pf_current_relbody, curr_pf_target] = swing_control(X, walking_Xd(7:9), Kstep, pf, dpf, t, gaitperiod, currcontact, ftcontacts);
-
-
+    [rrf_swing, pf_des_w, hips, pf_current_relbody, curr_pf_target] = swing_control_obstacle(X, walking_Xd(7:9), Kstep, pf, dpf, t, gaitperiod, currcontact, ftcontacts);
+    
+    
     if (t - last_mpc_run) >= mpc_dt
-        [rrf_mpc, grf_mpc] = mpc_simulink(X, walking_Xd, pf, t, N, mpc_dt, Q_current, ftcontacts);
+        [rrf_mpc, grf_mpc] = mpc_simulink(X, walking_Xd, pf, t, N, mpc_dt, Q_current, R_f, ftcontacts);
         % [rrf_mpc, grf_mpc] = mpc_mohsen_allocate(X, walking_Xd, pf, t, N, mpc_dt, ftcontacts);
         last_mpc_run = t;
     end
