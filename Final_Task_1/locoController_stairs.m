@@ -75,6 +75,7 @@ if isequal(gaitname, "standing")
 else
     
     Q_current = walking_x_Q;
+    R_f = 0.00005;
     Kstep = walking_x_Kstep;
     
     % If leg starts swing phase, run swing control for it
@@ -82,7 +83,7 @@ else
     
     
     if (t - last_mpc_run) >= mpc_dt
-        [rrf_mpc, grf_mpc] = mpc_simulink(X, walking_Xd, pf, t, N, mpc_dt, Q_current, ftcontacts);
+        [rrf_mpc, grf_mpc] = mpc_simulink(X, walking_Xd, pf, t, N, mpc_dt, Q_current, R_f,ftcontacts);
         % [rrf_mpc, grf_mpc] = mpc_mohsen_allocate(X, walking_Xd, pf, t, N, mpc_dt, ftcontacts);
         last_mpc_run = t;
     end
