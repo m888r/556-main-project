@@ -45,7 +45,7 @@ velTarget = speed_ramp(t, 0.65, 2, 0, 0);
 %     % pitchTarget = 0;
 % end
 % walking_Xd = [0; 0; zTarget; 0; pitchTarget; 0; velTarget; 0; 0; zeros(3,1)];
-walking_Xd = [0; 0; 0.2; 0; 0; 0; 0; 0; 3; zeros(3,1)];
+
 
 
 pf_des_w = zeros(12, 1);
@@ -53,19 +53,25 @@ hips = zeros(12, 1);
 pf_current_relbody = zeros(12, 1);
 curr_pf_target = zeros(12, 1);
 
-gaitname = gaitScheduler_obstacle(X, pf, t);
+[gaitname, landHeight, jumpVel, jumpAngle, walkVel] = gaitScheduler_obstacle(X, pf, t);
+
+walking_Xd = [0; 0; 0.25; 0; 0; 0; walkVel; 0; 0; zeros(3,1)]; %walking
+walking_x_Q = [0, 30, 30, 30, 300, 150, 4, 4, 4, 1, 1, 1, 0];
+walking_x_Kstep = 0.1;
 
 if isequal(gaitname, "jumpingg")
-    walking_Xd = [0; 0; 0; 0; -pi/4; 0; 2; 0; 3; zeros(3,1)];
+    walking_Xd = [0; 0; 0; 0; jumpAngle; 0; jumpVel; zeros(3,1)];
     walking_x_Q = [0, 30, 0, 30, 300, 150, 4, 4, 4, 1, 1, 1, 0];
 elseif isequal(gaitname, "soaringg")
     walking_Xd = [0; 0; 0; 0; 0; 0; 0; 0; 0; zeros(3,1)];
     walking_x_Q = [0, 30, 0, 30, 300, 150, 4, 4, 4, 1, 1, 1, 0];
+elseif isequal(gaitname, "singleFt")
+    walking_Xd = [0; 0; 0; 0; 0; 0; 0.3; 0; 0; zeros(3,1)];
+    walking_x_Q = [0, 30, 0, 30, 300, 150, 4, 4, 4, 1, 1, 1, 0];
 end
 
-walking_x_Q = [0, 30, 0, 30, 300, 150, 4, 4, 4, 1, 1, 1, 0];
-walking_x_Kstep = 0.1;
 
+gaitname
 [currcontact, ftcontacts] = project_gait(t,N,mpc_dt, gaitperiod, gaitname);
 % If current and future contacts are all 1, do standing PD
 if isequal(gaitname, "standing")
@@ -117,6 +123,9 @@ elseif isequal(gaitname, "soaringg")
     
     rrf = kP*(pf_target - pf_body) + kD*(-dpf_body); %in body orientation
     
+elseif isequal(gaitname, "landingg")
+    Xd = [X(1); X(2); landHeight; zeros(3,1); zeros(3,1); zeros(3,1)];
+    rrf = qp_simulink_landing(X, pf, t, Xd);
 else
     
     Q_current = walking_x_Q;
@@ -124,7 +133,7 @@ else
     Kstep = walking_x_Kstep;
     
     % If leg starts swing phase, run swing control for it
-    [rrf_swing, pf_des_w, hips, pf_current_relbody, curr_pf_target] = swing_control_obstacle(X, walking_Xd(7:9), Kstep, pf, dpf, t, gaitperiod, currcontact, ftcontacts);
+    [rrf_swing, pf_des_w, hips, pf_current_relbody, curr_pf_target] = swing_control(X, walking_Xd(7:9), Kstep, pf, dpf, t, gaitperiod, currcontact, ftcontacts);
     
     
     if (t - last_mpc_run) >= mpc_dt

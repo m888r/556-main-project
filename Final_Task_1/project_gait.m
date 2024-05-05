@@ -4,7 +4,6 @@ persistent t_gaitchange
 
 if isempty(currgait)
     currgait = "standing";
-    % currgait = "single";
 end
 
 if isempty(t_gaitchange)
@@ -16,30 +15,23 @@ if isequal(gaitname, "standing")
     gait_ref = [1; 1; 1; 1];
 elseif isequal(gaitname, "trotting")
     gait_ref = [1; 0; 0; 1; 0; 1; 1; 0];
-    % gait_ref = [0; 1; 1; 0; 1; 0; 0; 1];
-    %  gait_ref = ones(8, 1);
 elseif isequal(gaitname, "bounding")
     gait_ref = [1; 1; 0; 0; 0; 0; 1; 1];
 elseif isequal(gaitname, "singleFt")
-    % gait_ref = [1; 0; 0; 0;
-    %     0; 0; 0; 1;
-    %     0; 1; 0; 0;
-    %     0; 0; 1; 0];
     gait_ref = [0; 1; 1; 1;
         1; 1; 1; 0;
         1; 0; 1; 1;
         1; 1; 0; 1];
-    % elseif isequal(gaitname, "flying trot")
-    %     gait_ref = [1; 1; 0; 0; 0; 0; 0; 0 0; 0; 1; 1];
 elseif isequal(gaitname, "flyingtr")
     gait_ref = [1; 0; 0; 1; 0; 0; 0; 0; 0; 1; 1; 0; 0; 0; 0; 0];
 elseif isequal(gaitname, "jumpingg")
     gait_ref = [1; 1; 1; 1];
-    % gait_ref = [1; 1; 1; 1];
 elseif isequal(gaitname, "soaringg")
-    % gait_ref = [1; 1; 1; 1];
     gait_ref = [0; 0; 0; 0];
+elseif isequal(gaitname, "landingg")
+    gait_ref = [1; 1; 1; 1];
 end
+
 gait_states = length(gait_ref)/4;
 
 if ~isequal(currgait, gaitname)
@@ -49,12 +41,16 @@ end
 gait_t = t - t_gaitchange;
 
 % Default contact on all feet if last known state was standing
-if isequal(currgait, "standing") || isequal(currgait, "jumpingg")
+
+if isequal(currgait, "standing")
+    currcontact = [1; 1; 1; 1];
+elseif isequal(currgait, "jumpingg")
+    currcontact = [1; 1; 1; 1];
+elseif isequal(currgait,"landingg")
     currcontact = [1; 1; 1; 1];
 elseif isequal(currgait, "soaringg")
     currcontact = [0; 0; 0; 0];
 else
-    
     % Current gait state based on current time
     curr_state = floor(gait_t/gaitperiod) + 1;
     % If at the gait switch time, current state defaults to state before

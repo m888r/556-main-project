@@ -130,42 +130,6 @@ v_com = [x(7); x(8); 0];
 pf_des = [p_hip(1); p_hip(2); 0 - x(3)] + (T_stance/2)*v_com + K_step*(v_des - v_com);
 %display(pf_des);
 
-% get desired foot positions in world frame, wrt world origin
-com = x(1:3);
-pf_des_w = pf_des + com;
-
-obs1Start = 1;
-obs1Width = 0.8; % width of stairs from the side (so in x direction)
-obs1Height = 0.2;
-
-%find stair bounds to avoid edge or corner
-% stairBoundsX = []; % 5x2 matrix of most extreme allowed X positions at each step
-% for step = 0:4
-%     bound1 = stairStart + step*stairWidth + amountDeadband*stairWidth;
-%     bound2 = stairStart + (step+1)*stairWidth - amountDeadband*stairWidth;
-%     stairBoundsX = [stairBoundsX; [bound1, bound2]];
-% end
-
-%determine stair foot is going to
-obstacle = -1;
-if pf_des_w(1) <= obs1Start && pf_des_w(1) > obs1Start-0.2 %obstacle=0 represents being close to base of staircase
-    obstacle = 0;
-elseif pf_des_w(1) > obs1Start && pf_des_w(1) <= obs1Start+obs1Width
-    obstacle = 1;
-end
-
-%determine desired foot position based on stair
-if obstacle==0 % obstacle 0 represents being close to base of staircase
-    pf_des(1) = obs1Start-0.2 - com(1) - (T_stance)*v_com(3);
-elseif obstacle==1
-    % if pf_des_w(1) < 1
-    %     pf_des(1) = stairBoundsX(stair,1) - com(1);
-    % if pf_des_w(1) > 1.1
-    %     pf_des(1) = 1.1 - com(1);% - (T_stance)*v_com(1);
-    % end
-    pf_des(3) = obs1Height - com(3);% - (T_stance)*v_com(3);
-end
-
 end
 
 % should generalize by just using the hip speed
@@ -204,13 +168,7 @@ function [curr_pf_target, curr_dpf_target] = swing_trajectory(curr_t, T_stance, 
 % implement a linearly interpolated trajectory from pf_start to pf_des
 t = curr_t / (T_stance-0.03); %subtract 0.03 because for some reason trajectory target gets started late
 
-com = x(1:3);
-pf_des_w = pf_des + com;
-if pf_des_w(1)>1 && pf_des_w(1)<1.1
-    P_height = 0.23;
-else
-    P_height = 0.05; % height control point
-end
+P_height = 0.05;
 
 P0 = pf_start;
 P1 = [pf_start(1); pf_start(2); pf_start(3) + P_height];
