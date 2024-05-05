@@ -33,6 +33,12 @@ elseif isequal(gaitname, "singleFt")
     %     gait_ref = [1; 1; 0; 0; 0; 0; 0; 0 0; 0; 1; 1];
 elseif isequal(gaitname, "flyingtr")
     gait_ref = [1; 0; 0; 1; 0; 0; 0; 0; 0; 1; 1; 0; 0; 0; 0; 0];
+elseif isequal(gaitname, "jumpingg")
+    gait_ref = [1; 1; 1; 1];
+    % gait_ref = [1; 1; 1; 1];
+elseif isequal(gaitname, "soaringg")
+    % gait_ref = [1; 1; 1; 1];
+    gait_ref = [0; 0; 0; 0];
 end
 gait_states = length(gait_ref)/4;
 
@@ -43,8 +49,10 @@ end
 gait_t = t - t_gaitchange;
 
 % Default contact on all feet if last known state was standing
-if isequal(currgait, "standing")
+if isequal(currgait, "standing") || isequal(currgait, "jumpingg")
     currcontact = [1; 1; 1; 1];
+elseif isequal(currgait, "soaringg")
+    currcontact = [0; 0; 0; 0];
 else
     
     % Current gait state based on current time
