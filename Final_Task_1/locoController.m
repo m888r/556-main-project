@@ -28,7 +28,8 @@ curr_pf_target = zeros(12, 1);
 
 gaitname = gaitScheduler(X, pf, t);
 
-walking_x_Q = [10, 10, 30, 30, 600, 150, 4, 4, 4, 1, 1, 1, 0];
+% ypr angles (gets rearranged in mpc_simulink)
+walking_x_Q = [10, 10, 30, 30, 600, 150, 20, 4, 4, 20, 1, 1, 0];
 bounding_Q = [90, 40, 3000, 30, 1, 30, 4, 4, 4, 1, 1, 1, 0];
 walking_x_Kstep = 0.1;
 
@@ -62,9 +63,11 @@ else
     R_f = 0.00005;
     Kstep = walking_x_Kstep;
     
-    v_x_des = speed_ramp(t, 0.65, 2, 0, 1.5);
+    %v_x_des = speed_ramp(t, 0.65, 2, 0, -1);
+    v_x_des = 0;
+    %v_y_des = speed_ramp(t, 0.65, 2, 0, 1);
     v_y_des = 0;
-    yaw_des = 0;
+    yaw_des = speed_ramp(t, 0.65, 2, 0, 0.5);
     
     walking_Xd = [X(1); X(2); 0.25; X(4); 0; 0; v_x_des; v_y_des; 0; yaw_des; 0; 0];
     

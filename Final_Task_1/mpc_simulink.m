@@ -64,14 +64,14 @@ phi  = ypr(3);
 Rot_all = eul2rotm(ypr');
 
 %Rz_T = [cos(psi), sin(psi), 0; -sin(psi), cos(psi), 0; 0, 0, 1];
-Rz = [cos(psi), sin(psi), 0; -sin(psi), cos(psi), 0; 0, 0, 1];
+Rz = [cos(psi), -sin(psi), 0; sin(psi), cos(psi), 0; 0, 0, 1];
 Rz_T = Rz';
 
-I_w = Rot_all'*I_b*Rot_all;
+I_w = Rot_all*I_b*Rot_all';
 
 A_bar = zeros(bar_states);
 A_bar(1:3, 3*2+1:3*3) = eye(3);
-A_bar(3+1:3*2, 3*3+1:3*4) = Rz;
+A_bar(3+1:3*2, 3*3+1:3*4) = Rz_T;
 A_bar(3*3, bar_states) = -1;
 % Position of feet in world frame
 r_f1 = pf(1:3) - P;
