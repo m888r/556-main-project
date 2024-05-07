@@ -63,11 +63,12 @@ hips = zeros(12, 1);
 pf_current_relbody = zeros(12, 1);
 curr_pf_target = zeros(12, 1);
 
-[gaitname, landHeight, jumpVel, jumpAngle, walkVel, height] = gaitScheduler_obstacle(X, pf, t);
+[gaitname, landHeight, jumpVel, jumpAngle, walkVel, height,R_f, walking_x_Q,pf_target] = gaitScheduler_obstacle(X, pf, t);
 gaitname
 walking_Xd = [0; 0; height; 0; 0; 0; walkVel; 0; 0; zeros(3,1)]; %walking
-walking_x_Q = [0, 30, 30, 30, 300, 150, 4, 4, 4, 1, 1, 1, 0];
+% walking_x_Q = [0, 30, 30, 30, 300, 150, 4, 4, 4, 1, 1, 1, 0]; %yaw 30->150
 walking_x_Kstep = 0.1;
+
 
 if isequal(gaitname, "jumpingg")
     walking_Xd = [0; 0; 0; 0; jumpAngle; 0; jumpVel; zeros(3,1)];
@@ -116,10 +117,11 @@ elseif isequal(gaitname, "soaringg")
     % pf_target(6) = -0.3;
     % pf_target(9) = -0.3;
     % pf_target(12) = -0.3;
-    pf_target = [0.25;0.14;-0.1;
-        0.25;-0.14;-0.1;
-        -0.15;0.14;-0.1;
-        -0.15;-0.14;-0.1];
+    
+    % pf_target = [0.25;0.14;-0.1;
+    %     0.25;-0.14;-0.1;
+    %     -0.15;0.14;-0.1;
+    %     -0.15;-0.14;-0.1];
     
     com = X(1:3);
     vcom = X(7:9);
@@ -140,7 +142,7 @@ elseif isequal(gaitname, "landingg")
 else
     
     Q_current = walking_x_Q;
-    R_f = 0.00005;
+    
     Kstep = walking_x_Kstep;
     
     % If leg starts swing phase, run swing control for it

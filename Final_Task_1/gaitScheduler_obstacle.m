@@ -1,4 +1,4 @@
-function [gaitname, landHeight, jumpVel, jumpAngle, walkVel, height] = gaitScheduler_obstacle(X, pf, t)
+function [gaitname, landHeight, jumpVel, jumpAngle, walkVel, height, R_f, x_Q, pf_target] = gaitScheduler_obstacle(X, pf, t)
 persistent state2_start;
 persistent state3_start;
 persistent obstacleState;
@@ -24,7 +24,13 @@ jumpVel = [0;0;0];
 
 height = 0;
 walkVel = 0;
+R_f = 0.00005;
+x_Q = [0, 30, 30, 30, 300, 150, 4, 4, 4, 1, 1, 1, 0]; %default
 
+pf_target = [0.25;0.14;-0.1;
+    0.25;-0.14;-0.1;
+    -0.15;0.14;-0.1;
+    -0.15;-0.14;-0.1];
 
 if X(1) > 0.3%0.7 % right before first obstacle
     obstacleState = 2;
@@ -34,7 +40,7 @@ if X(1) > 0.3%0.7 % right before first obstacle
     end
 end
 
-if X(1) > 5.7
+if X(1) > 5.62%5.68
     obstacleState = 3;
     
     if state3_start == 0  %first iteration that state3 starts
@@ -99,6 +105,7 @@ elseif obstacleState == 2
         gaitname = "jumpingg";
         jumpVel = [2;0;3];
         jumpAngle = -pi/8; %-pi/4;
+        R_f = 0.00005;
     elseif t-state2_start < 1.15
         gaitname = "soaringg";
     elseif t-state2_start < 2
@@ -108,6 +115,7 @@ elseif obstacleState == 2
         gaitname = "jumpingg";
         jumpVel = [2;0;3];
         jumpAngle = 0;
+        R_f = 0.00005;
     elseif t-state2_start < 2.4
         gaitname = "soaringg";
     elseif t-state2_start < 3
@@ -122,7 +130,7 @@ elseif obstacleState == 2
 else
     % jumping over final obstacle (state 3)
     deccelerate = 1;
-    trotInPlace = 0.45;
+    trotInPlace = 0.6;
     standing = 0.3;
     jumping = 0.15;
     soaring = 0.45;
@@ -136,6 +144,8 @@ else
         disp("second trot")
     elseif t-state3_start < deccelerate + trotInPlace
         gaitname = "trotting";
+        x_Q = [0, 30, 30, 150, 300, 150, 4, 4, 4, 1, 1, 1, 0];
+        % gaitname = "singleFt";
         height = 0.25;
         walkVel = 0;
         disp("second trot")
@@ -143,10 +153,16 @@ else
         gaitname = "standing";
     elseif t-state3_start < deccelerate + trotInPlace + standing + jumping
         gaitname = "jumpingg";
-        jumpVel = [2;0;4];
-        jumpAngle = -pi/2; %-pi/4;
+        jumpVel = [3;0;7];
+        jumpAngle = -pi; %-pi/2;
+        % R_f = 0.00001
+        R_f = 0.000005;
     elseif t-state3_start < deccelerate + trotInPlace + standing + jumping + soaring
         gaitname = "soaringg";
+        pf_target = [0.25;0.14;-0.05;
+            0.25;-0.14;-0.05;
+            -0.15;0.14;-0.05;
+            -0.15;-0.14;-0.05];
     elseif t-state3_start < deccelerate + trotInPlace + standing + jumping + soaring + landing
         gaitname = "landingg";
         landHeight = 0.2;
