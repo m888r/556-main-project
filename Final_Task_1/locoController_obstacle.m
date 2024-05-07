@@ -1,6 +1,16 @@
 function [rrf, rrf_world, pf_des_w, hips, pf_current_relbody, curr_pf_target,pf_target] = locoController_obstacle(X, pf, dpf, t, q, dq)
 persistent last_mpc_run;
 persistent rrf_mpc;
+persistent prev_gait;
+persistent prev_gait_startTime;
+
+if isempty(prev_gait_startTime)
+    prev_gait_startTime = 0;
+end
+
+if isempty(prev_gait)
+    prev_gait = "standing";
+end
 
 rrf_world = zeros(12, 1);
 
@@ -21,9 +31,9 @@ legs = 4;
 rrf = zeros(12, 1);
 grf_mpc = zeros(12, 1);
 
-Xd = [0; 0; 0.2; zeros(3,1); zeros(3,1); zeros(3,1)];
+Xd = [X(1); X(2); 0.2; zeros(3,1); zeros(3,1); zeros(3,1)];
 
-velTarget = speed_ramp(t, 0.65, 2, 0, 0);
+% velTarget = speed_ramp(t, 0.65, 2, 0, 0);
 
 % Get zTarget and pitchTarget
 % obs1Start = 1; %where base of obs1 starts wrt world origin
@@ -53,9 +63,9 @@ hips = zeros(12, 1);
 pf_current_relbody = zeros(12, 1);
 curr_pf_target = zeros(12, 1);
 
-[gaitname, landHeight, jumpVel, jumpAngle, walkVel] = gaitScheduler_obstacle(X, pf, t);
-
-walking_Xd = [0; 0; 0.25; 0; 0; 0; walkVel; 0; 0; zeros(3,1)]; %walking
+[gaitname, landHeight, jumpVel, jumpAngle, walkVel, height] = gaitScheduler_obstacle(X, pf, t);
+gaitname
+walking_Xd = [0; 0; height; 0; 0; 0; walkVel; 0; 0; zeros(3,1)]; %walking
 walking_x_Q = [0, 30, 30, 30, 300, 150, 4, 4, 4, 1, 1, 1, 0];
 walking_x_Kstep = 0.1;
 
@@ -69,10 +79,11 @@ elseif isequal(gaitname, "singleFt")
     walking_Xd = [0; 0; 0; 0; 0; 0; 0.3; 0; 0; zeros(3,1)];
     walking_x_Q = [0, 30, 0, 30, 300, 150, 4, 4, 4, 1, 1, 1, 0];
 end
-
-
-gaitname
-[currcontact, ftcontacts] = project_gait(t,N,mpc_dt, gaitperiod, gaitname);
+t_proj_gait = t;
+if isequal(gaitname, "standing") && isequal(prev_gait, "trotting")
+    t_proj_gait = 0;
+end
+[currcontact, ftcontacts] = project_gait(t_proj_gait,N,mpc_dt, gaitperiod, gaitname);
 % If current and future contacts are all 1, do standing PD
 if isequal(gaitname, "standing")
     % Joint PD
@@ -105,10 +116,10 @@ elseif isequal(gaitname, "soaringg")
     % pf_target(6) = -0.3;
     % pf_target(9) = -0.3;
     % pf_target(12) = -0.3;
-    pf_target = [0.2;0.14;-0.2;
-        0.2;-0.14;-0.2;
-        -0.15;0.14;-0.25;
-        -0.15;-0.14;-0.25];
+    pf_target = [0.25;0.14;-0.1;
+        0.25;-0.14;-0.1;
+        -0.15;0.14;-0.1;
+        -0.15;-0.14;-0.1];
     
     com = X(1:3);
     vcom = X(7:9);
@@ -151,4 +162,5 @@ for ind = 1:4
     rrf_world(ind*3-2:ind*3) = eul2rotm(X(4:6)') * rrf(ind*3-2:ind*3);
 end
 
+prev_gait = gaitname;
 end

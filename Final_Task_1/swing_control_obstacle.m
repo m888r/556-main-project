@@ -130,6 +130,13 @@ v_com = [x(7); x(8); 0];
 pf_des = [p_hip(1); p_hip(2); 0 - x(3)] + (T_stance/2)*v_com + K_step*(v_des - v_com);
 %display(pf_des);
 
+com = x(1:3);
+pf_des_w = pf_des + com;
+
+if pf_des_w(1)>1 && pf_des_w(1) < 1.8
+    pf_des(3) = 0.2 - com(3);
+end
+
 end
 
 % should generalize by just using the hip speed

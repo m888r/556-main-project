@@ -41,31 +41,38 @@ end
 gait_t = t - t_gaitchange;
 
 % Default contact on all feet if last known state was standing
-
 if isequal(currgait, "standing")
     currcontact = [1; 1; 1; 1];
-elseif isequal(currgait, "jumpingg")
+elseif isequal(currgait, "jumpingg") % If last known state was jumping
     currcontact = [1; 1; 1; 1];
-elseif isequal(currgait,"landingg")
+elseif isequal(currgait,"landingg") % If last known state was landing
     currcontact = [1; 1; 1; 1];
-elseif isequal(currgait, "soaringg")
+elseif isequal(currgait, "soaringg") % If last known state was soaring
     currcontact = [0; 0; 0; 0];
 else
     % Current gait state based on current time
     curr_state = floor(gait_t/gaitperiod) + 1;
     % If at the gait switch time, current state defaults to state before
     % switching
-    if mod(gait_t, gaitperiod) == 0
-        curr_state = curr_state - 1;
-    end
     
+    if gait_t > 0
+        if mod(gait_t, gaitperiod) == 0
+            curr_state = curr_state - 1;
+        end
+    end
     % Current gait state starting index in gait_ref
     curr_startind = (curr_state - 1)*4 + 1;
+    
     % If current start index is greater than the gait_ref given, loop around
     % and update gait_ref
     if curr_startind > gait_states*4
         curr_startind = mod(curr_startind, gait_states*4);
     end
+    
+    
+    % if curr_startind < 1
+    %     currcontact = [1;1;1;1];
+    % else
     currcontact = gait_ref(curr_startind:curr_startind+3);
     
 end

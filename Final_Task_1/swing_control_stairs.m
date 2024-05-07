@@ -173,7 +173,7 @@ elseif ismember(stair,[1,2,3,4])
         pf_des(1) = stairBoundsX(stair,2) - com(1) - (T_stance)*v_com(1);
     end
     pf_des(3) = stairHeight*stair - com(3) - (T_stance)*v_com(3);
-    com(3);
+    % com(3);
 elseif stair==5
     pf_des(3) = 0.5 - com(3) - (T_stance)*v_com(3);
 end
