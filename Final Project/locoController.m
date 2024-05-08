@@ -74,9 +74,10 @@ else
     
     v_x_des = 0;
     v_y_des = 0;
-    yaw_rate_des = 0;
+    yaw_rate_des = 0.0;
 
-    % v_x_des = speed_ramp(t, 0.65, 3, 0, 4); % trotting to 4 m/s
+    % Forwards/Backwards
+    v_x_des = speed_ramp(t, 0.65, 4, 0, 4); % trotting to 4 m/s
     % v_x_des = speed_ramp(t, 0.65, 1.2, 2.0, 3); % bounding to 4 m/s
 
     % Forwards/Backwards

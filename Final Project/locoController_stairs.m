@@ -30,8 +30,8 @@ xCurr = X(1);
 if xCurr < stairStart-0.2
     zTarget = zStart;
     pitchTarget = 0;
-elseif xCurr > stairStart-0.2 && xCurr < stairStart+0.9
-    zTarget = zStart + (xCurr-(stairStart-0.2))*0.1/0.2;
+elseif xCurr > stairStart-0.3 && xCurr < stairStart+0.9
+    zTarget = zStart + (xCurr-(stairStart-0.3))*0.1/0.2;
     pitchTarget = -pi/8;
 else
     zTarget = zStart + 0.5; %add total staircase height
