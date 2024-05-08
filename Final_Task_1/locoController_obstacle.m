@@ -63,7 +63,7 @@ hips = zeros(12, 1);
 pf_current_relbody = zeros(12, 1);
 curr_pf_target = zeros(12, 1);
 
-[gaitname, landHeight, jumpVel, jumpAngle, walkVel, height,R_f, walking_x_Q,pf_target] = gaitScheduler_obstacle(X, pf, t);
+[gaitname, landHeight, jumpVel, jumpAngle, walkVel, height,R_f, walking_x_Q,pf_target,soarPD] = gaitScheduler_obstacle(X, pf, t);
 gaitname
 walking_Xd = [0; 0; height; 0; 0; 0; walkVel; 0; 0; zeros(3,1)]; %walking
 % walking_x_Q = [0, 30, 30, 30, 300, 150, 4, 4, 4, 1, 1, 1, 0]; %yaw 30->150
@@ -133,9 +133,9 @@ elseif isequal(gaitname, "soaringg")
     for ind = 1:4
         dpf_body(ind*3-2:ind*3) = eul2rotm(X(4:6)')' * (dpf(ind*3-2:ind*3) - vcom);
     end
-    
-    rrf = kP*(pf_target - pf_body) + kD*(-dpf_body); %in body orientation
-    
+    if soarPD == 1
+        rrf = kP*(pf_target - pf_body) + kD*(-dpf_body); %in body orientation
+    end
 elseif isequal(gaitname, "landingg")
     Xd = [X(1); X(2); landHeight; zeros(3,1); zeros(3,1); zeros(3,1)];
     rrf = qp_simulink_landing(X, pf, t, Xd);
