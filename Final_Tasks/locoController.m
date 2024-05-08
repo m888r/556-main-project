@@ -81,7 +81,7 @@ else
     % v_x_des = speed_ramp(t, 0.65, 1.2, 2.0, 3); % bounding to 4 m/s
 
     % Forwards/Backwards
-    v_x_des = speed_ramp(t, 0.65, 2, 0, -1);
+    %v_x_des = speed_ramp(t, 0.65, 2, 0, -1);
     % Sideways
     %v_y_des = speed_ramp(t, 0.65, 2, 0, 1);
     % Turn in Place
