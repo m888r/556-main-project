@@ -94,8 +94,10 @@ rrf = zeros(12, 1);
 curr_pf_target = zeros(12, 1);
 for i = 1:4
     if ftcontact_next(i) == 0
+        % kP = 3500;
+        % kD = 10;
         kP = 3500;
-        kD = 10;
+        kD = 50;
         curr_t = localSwingTimer(i);
         [rrf_unrotated(i*3-2:i*3), curr_pf_target(i*3-2:i*3)] = swing_cartesian_PD(kP, kD, pf(i*3-2:i*3), dpf(i*3-2:i*3), curr_t, T_stance, pf_start(i*3-2:i*3), pf_des(i*3-2:i*3), x);
         curr_pf_target(i*3-2:i*3) = curr_pf_target(i*3-2:i*3) + com;

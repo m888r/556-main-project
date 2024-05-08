@@ -5,7 +5,8 @@ if t < 0.65
 else
     gaitname = "trotting";
     % gaitname = "singleFt";
-    
+    % gaitname = "gallopng";
+    % gaitname = "bounding";
     
 %end
 end

@@ -16,7 +16,8 @@ if isequal(gaitname, "standing")
 elseif isequal(gaitname, "trotting")
     gait_ref = [1; 0; 0; 1; 0; 1; 1; 0];
 elseif isequal(gaitname, "bounding")
-    gait_ref = [1; 1; 0; 0; 0; 0; 1; 1];
+    % gait_ref = [1; 1; 0; 0; 0; 0; 1; 1];
+    gait_ref = [0; 0; 1; 1; 1; 1; 0; 0];
 elseif isequal(gaitname, "singleFt")
     gait_ref = [0; 1; 1; 1;
         1; 1; 1; 0;
@@ -30,6 +31,8 @@ elseif isequal(gaitname, "soaringg")
     gait_ref = [0; 0; 0; 0];
 elseif isequal(gaitname, "landingg")
     gait_ref = [1; 1; 1; 1];
+elseif isequal(gaitname, "gallopng")
+    gait_ref = [1; 0; 0; 0; 0; 1; 0; 0; 0; 0; 1; 0; 0; 0; 0; 1; 0; 0; 0; 0];
 end
 
 gait_states = length(gait_ref)/4;
@@ -77,6 +80,7 @@ else
     
 end
 
+% this section causes a problem when the gait period is too high
 % Repeat above process for N times to get future foot contacts
 ftcontacts = zeros(4*N,1);
 for ind = 1:N

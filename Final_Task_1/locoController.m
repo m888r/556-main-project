@@ -14,12 +14,16 @@ end
 
 N = 10;
 mpc_dt = 0.03;
-gaitperiod = 0.12;
+gaitperiod = 0.12; % running
+% gaitperiod = 0.15; % bounding
 legs = 4;
 rrf = zeros(12, 1);
 grf_mpc = zeros(12, 1);
+com_height = 0.3; % running works better with 0.3
+% com_height = 0.25; % bounding
 
-Xd = [0; 0; 0.25; zeros(3,1); zeros(3,1); zeros(3,1)];
+
+Xd = [0; 0; com_height; zeros(3,1); zeros(3,1); zeros(3,1)];
 
 pf_des_w = zeros(12, 1);
 hips = zeros(12, 1);
@@ -29,9 +33,11 @@ curr_pf_target = zeros(12, 1);
 gaitname = gaitScheduler(X, pf, t);
 
 % ypr angles (gets rearranged in mpc_simulink)
-walking_x_Q = [10, 10, 30, 30, 600, 150, 20, 4, 4, 100, 1, 1, 0];
-bounding_Q = [90, 40, 3000, 30, 1, 30, 4, 4, 4, 1, 1, 1, 0];
-walking_x_Kstep = 0.1;
+walking_x_Q = [10, 10, 30, 30, 300, 300, 20, 4, 4, 1, 1, 1, 0];
+running_Q = [10, 10, 30, 30, 300, 300, 20, 4, 4, 100, 0, 1, 0];
+turning_Q = [10, 10, 30, 30, 600, 150, 20, 4, 4, 100, 1, 1, 0];
+bounding_Q = [100, 10, 400, 30, 30, 30, 200, 4, 4, 1, 1, 0, 0];
+walking_x_Kstep = 0;
 
 [currcontact, ftcontacts] = project_gait(t,N,mpc_dt, gaitperiod, gaitname);
 % If current and future contacts are all 1, do standing PD
@@ -58,23 +64,27 @@ if isequal(gaitname, "standing")
     % Else, run mpc
 else
     
-    Q_current = walking_x_Q;
-    % Q_current = bounding_Q;
+    % Q_current = running_Q;
+    % Q_current = walking_x_Q;
+    Q_current = running_Q;
     R_f = 0.00005;
+    % R_f = 0.00001; % bounding R_f
     Kstep = walking_x_Kstep;
     
     v_x_des = 0;
     v_y_des = 0;
-    yaw_des = 0;
+    yaw_rate_des = 0;
 
     % Forwards/Backwards
-    v_x_des = speed_ramp(t, 0.65, 2, 0, 1);
+    v_x_des = speed_ramp(t, 0.65, 4, 0, 4); % trotting to 4 m/s
+    % v_x_des = speed_ramp(t, 0.65, 1.2, 2.0, 3); % bounding to 4 m/s
     % Sideways
     %v_y_des = speed_ramp(t, 0.65, 2, 0, 1);
     % Turn in Place
     %yaw_des = speed_ramp(t, 0.65, 2, 0, 1);
     
-    walking_Xd = [X(1); X(2); 0.25; X(4); 0; 0; v_x_des; v_y_des; 0; yaw_des; 0; 0];
+    walking_Xd = [X(1); X(2); com_height; X(4); 0; 0; v_x_des; v_y_des; 0; yaw_rate_des; 0; 0];
+    bounding_Xd = [X(1); X(2); com_height; X(4); -0.3; 0; v_x_des; v_y_des; 0; yaw_rate_des; 0; 0];
     
     % If leg starts swing phase, run swing control for it
     [rrf_swing, pf_des_w, hips, pf_current_relbody, curr_pf_target] = swing_control(X, walking_Xd(7:9), Kstep, pf, dpf, t, gaitperiod, currcontact, ftcontacts);
