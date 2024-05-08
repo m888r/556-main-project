@@ -40,7 +40,7 @@ if X(1) > 0.64%0.7 % right before first obstacle
     end
 end
 
-if X(1) > 5.58%5.68
+if X(1) > 5.59%5.68
     obstacleState = 3;
     
     if state3_start == 0  %first iteration that state3 starts
@@ -148,7 +148,7 @@ else
     standing = 0.3;
     jumping = 0.15;
     soaring = 0.75; %0.45
-    soarPD_begin = 0.65;
+    soarPD_begin = 0.68;
     landing = 0.3;
     
     if t-state3_start < deccelerate
