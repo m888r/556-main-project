@@ -63,11 +63,16 @@ else
     R_f = 0.00005;
     Kstep = walking_x_Kstep;
     
-    %v_x_des = speed_ramp(t, 0.65, 2, 0, -1);
     v_x_des = 0;
-    %v_y_des = speed_ramp(t, 0.65, 2, 0, 1);
     v_y_des = 0;
-    yaw_des = speed_ramp(t, 0.65, 2, 0, 1);
+    yaw_des = 0;
+
+    % Forwards/Backwards
+    v_x_des = speed_ramp(t, 0.65, 2, 0, 1);
+    % Sideways
+    %v_y_des = speed_ramp(t, 0.65, 2, 0, 1);
+    % Turn in Place
+    %yaw_des = speed_ramp(t, 0.65, 2, 0, 1);
     
     walking_Xd = [X(1); X(2); 0.25; X(4); 0; 0; v_x_des; v_y_des; 0; yaw_des; 0; 0];
     
