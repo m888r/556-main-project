@@ -34,7 +34,8 @@ gaitname = gaitScheduler(X, pf, t);
 
 % ypr angles (gets rearranged in mpc_simulink)
 walking_x_Q = [10, 10, 30, 30, 300, 300, 20, 4, 4, 1, 1, 1, 0];
-running_Q = [10, 10, 30, 30, 300, 300, 20, 4, 4, 100, 0, 1, 0];
+% running_Q = [10, 10, 30, 30, 300, 300, 20, 4, 4, 100, 0, 1, 0];
+running_Q = [10, 10, 100, 30, 300, 300, 20, 4, 4, 100, 0, 1, 0];
 turning_Q = [10, 10, 30, 30, 600, 150, 20, 4, 4, 100, 1, 1, 0];
 bounding_Q = [100, 10, 400, 30, 30, 30, 200, 4, 4, 1, 1, 0, 0];
 walking_x_Kstep = 0;
@@ -76,7 +77,7 @@ else
     yaw_rate_des = 0;
 
     % Forwards/Backwards
-    v_x_des = speed_ramp(t, 0.65, 4, 0, 4); % trotting to 4 m/s
+    v_x_des = speed_ramp(t, 0.65, 3, 0, 4); % trotting to 4 m/s
     % v_x_des = speed_ramp(t, 0.65, 1.2, 2.0, 3); % bounding to 4 m/s
     % Sideways
     %v_y_des = speed_ramp(t, 0.65, 2, 0, 1);
